@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Práctica 1 — Geolocalización API</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; padding: 24px; }
+    h1 { font-size: 22px; font-weight: 600; color: #63b3ed; margin-bottom: 4px; }
+    .subtitle { font-size: 13px; color: #718096; margin-bottom: 20px; }
+    .card { background: #1a1d27; border: 1px solid #2d3748; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    #map { height: 340px; border-radius: 10px; border: 1px solid #2d3748; }
+    .btn { background: #3182ce; color: white; border: none; padding: 10px 22px; border-radius: 8px; font-size: 14px; cursor: pointer; margin-top: 14px; font-weight: 500; }
+    .btn:hover { background: #2b6cb0; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 14px; }
+    .info-box { background: #0f1117; border-radius: 8px; padding: 12px; border: 1px solid #2d3748; }
+    .info-box label { font-size: 11px; color: #718096; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .info-box span { font-size: 16px; font-weight: 600; color: #63b3ed; font-family: monospace; }
+    .status { font-size: 13px; color: #68d391; margin-top: 10px; }
+    .badge { display: inline-block; background: #1c4f82; color: #63b3ed; font-size: 11px; padding: 3px 10px; border-radius: 20px; margin-bottom: 16px; font-weight: 500; }
+    pre { background: #0f1117; border: 1px solid #2d3748; border-radius: 8px; padding: 14px; font-size: 12px; color: #a0aec0; margin-top: 12px; overflow-x: auto; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="badge">API #1 — Geolocalización</div>
+  <h1>Geolocalización con Leaflet.js</h1>
+  <p class="subtitle">Consume la API del navegador navigator.geolocation y muestra el mapa con Leaflet + OpenStreetMap</p>
+
+  <div class="card">
+    <div id="map"></div>
+    <div class="info-grid">
+      <div class="info-box"><label>Latitud</label><span id="lat">—</span></div>
+      <div class="info-box"><label>Longitud</label><span id="lon">—</span></div>
+      <div class="info-box"><label>Precisión (m)</label><span id="acc">—</span></div>
+    </div>
+    <button class="btn" onclick="obtenerUbicacion()">📍 Obtener mi ubicación</button>
+    <p class="status" id="status">Esperando acción del usuario...</p>
+  </div>
+
+  <div class="card">
+    <p style="font-size:13px;color:#a0aec0;margin-bottom:8px;font-weight:500;">Código fuente — Lógica principal</p>
+    <pre>// API del navegador: navigator.geolocation
+function obtenerUbicacion() {
+  navigator.geolocation.getCurrentPosition(
+    function(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const acc = position.coords.accuracy;
+
+      // Mostrar en la interfaz
+      document.getElementById('lat').textContent = lat.toFixed(6);
+      document.getElementById('lon').textContent = lon.toFixed(6);
+      document.getElementById('acc').textContent = acc.toFixed(0);
+
+      // Centrar mapa en Leaflet
+      map.setView([lat, lon], 15);
+      L.marker([lat, lon])
+        .addTo(map)
+        .bindPopup("¡Estás aquí!")
+        .openPopup();
+    },
+    function(error) {
+      console.error("Error:", error.message);
+    }
+  );
+}</pre>
+  </div>
+
+  <script>
+    // Inicializar mapa con Leaflet + OpenStreetMap (gratuito)
+    var map = L.map('map').setView([25.4260, -100.9938], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    function obtenerUbicacion() {
+      document.getElementById('status').textContent = 'Obteniendo ubicación...';
+      if (!navigator.geolocation) {
+        document.getElementById('status').textContent = 'Geolocalización no soportada en este navegador.';
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          var lat = position.coords.latitude;
+          var lon = position.coords.longitude;
+          var acc = position.coords.accuracy;
+          document.getElementById('lat').textContent = lat.toFixed(6);
+          document.getElementById('lon').textContent = lon.toFixed(6);
+          document.getElementById('acc').textContent = acc.toFixed(0);
+          map.setView([lat, lon], 15);
+          L.marker([lat, lon]).addTo(map).bindPopup('<b>¡Estás aquí!</b><br>Lat: ' + lat.toFixed(4) + '<br>Lon: ' + lon.toFixed(4)).openPopup();
+          document.getElementById('status').textContent = '✓ Ubicación obtenida correctamente.';
+        },
+        function(error) {
+          // Demo con coordenadas de Saltillo si se niega permiso
+          var lat = 25.4260, lon = -100.9938;
+          document.getElementById('lat').textContent = lat.toFixed(6);
+          document.getElementById('lon').textContent = lon.toFixed(6);
+          document.getElementById('acc').textContent = '~5000';
+          map.setView([lat, lon], 13);
+          L.marker([lat, lon]).addTo(map).bindPopup('<b>Saltillo, Coahuila (demo)</b>').openPopup();
+          document.getElementById('status').textContent = 'Permiso denegado — mostrando ubicación demo.';
+        }
+      );
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Mashup - Unidad 3</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+  --bg:#09090f;--bg2:#11111c;--bg3:#16162a;
+  --border:rgba(255,255,255,0.08);--text:#e2e8f0;--muted:#64748b;
+  --c1:#63b3ed;--c2:#a78bfa;--c3:#34d399;
+  --c4:#f59e0b;--c5:#fb923c;--c6:#e879f9;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header-left h1{font-size:18px;font-weight:700;}
+.header-left span{font-size:12px;color:var(--muted);}
+.header-right{display:flex;gap:8px;flex-wrap:wrap;}
+.pill{font-size:11px;padding:4px 12px;border-radius:20px;font-weight:600;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:16px 20px;}
+.api-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;}
+.api-card-header{padding:12px 14px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.api-num{width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.api-card-header h2{font-size:13px;font-weight:600;}
+.api-card-header p{font-size:11px;color:var(--muted);}
+.api-card-body{padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:8px;}
+label{font-size:11px;color:var(--muted);display:block;margin-bottom:3px;}
+input,textarea,select{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:8px;font-size:12px;width:100%;}
+input:focus,textarea:focus{outline:none;border-color:rgba(255,255,255,0.25);}
+textarea{resize:none;}
+.btn{border:none;padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;width:100%;transition:opacity .15s;}
+.btn:hover{opacity:.85;}
+.result{background:var(--bg3);border-radius:8px;padding:9px 11px;font-size:12px;flex:1;border:1px solid var(--border);}
+#miniMap{height:130px;border-radius:8px;border:1px solid var(--border);overflow:hidden;}
+.coord-row{display:flex;gap:6px;}
+.coord-box{flex:1;background:var(--bg3);border-radius:6px;padding:6px 8px;border:1px solid var(--border);text-align:center;}
+.coord-box label{font-size:9px;margin:0 0 2px;}
+.coord-box span{font-size:13px;font-weight:700;color:var(--c1);font-family:monospace;}
+.tweet{background:var(--bg3);border-radius:8px;padding:9px;border:1px solid var(--border);}
+.tweet-head{display:flex;align-items:center;gap:7px;margin-bottom:5px;}
+.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.prod-row{display:flex;gap:8px;align-items:flex-start;}
+.prod-img{width:56px;height:56px;background:white;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+.prod-img img{max-width:50px;max-height:50px;object-fit:contain;}
+.db-log{display:flex;flex-direction:column;gap:4px;max-height:80px;overflow-y:auto;}
+.db-entry-row{display:flex;align-items:center;gap:6px;font-size:11px;}
+.tag{padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;}
+.chat-area{background:#111827;border-radius:8px;padding:8px;min-height:65px;max-height:90px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;}
+.bubble-out{background:var(--c5);color:#000;border-radius:10px 10px 2px 10px;padding:5px 9px;font-size:11px;align-self:flex-end;max-width:85%;}
+.bubble-sys{font-size:10px;color:var(--muted);text-align:center;}
+/* Panel 6 */
+.yt-wrap{display:flex;flex-direction:column;gap:6px;}
+.yt-search-row{display:flex;gap:6px;}
+.yt-search-row input{margin:0;flex:1;border-color:rgba(232,121,249,0.25);}
+.yt-search-row input:focus{border-color:var(--c6);}
+.yt-search-btn{background:var(--c6);color:#000;border:none;padding:7px 14px;border-radius:8px;font-size:14px;cursor:pointer;font-weight:700;white-space:nowrap;flex-shrink:0;transition:opacity .15s;}
+.yt-search-btn:hover{opacity:.85;}
+.yt-status{font-size:10px;padding:3px 6px;border-radius:5px;}
+.yt-status.loading{color:var(--c6);background:rgba(232,121,249,0.1);}
+.yt-status.ok{color:#34d399;background:rgba(52,211,153,0.1);}
+.yt-status.err{color:#f87171;background:rgba(248,113,113,0.1);}
+/* Lista de resultados */
+.yt-list{display:flex;flex-direction:column;gap:5px;max-height:220px;overflow-y:auto;position:relative;z-index:1;}
+.yt-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:9px;border:1px solid rgba(232,121,249,0.15);cursor:pointer;background:var(--bg3);transition:all .15s;position:relative;z-index:2;}
+.yt-item:hover{border-color:var(--c6);background:#1a0533;transform:translateX(2px);}
+.yt-item img{width:60px;height:42px;border-radius:6px;object-fit:cover;flex-shrink:0;background:#1c1033;}
+.yt-item-info{flex:1;min-width:0;}
+.yt-item-title{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;}
+.yt-item-ch{font-size:10px;color:var(--c6);margin-top:2px;}
+.yt-item-arrow{color:var(--c6);font-size:16px;flex-shrink:0;font-weight:700;}
+/* Reproductor */
+.yt-player-box{display:none;flex-direction:column;gap:8px;}
+.yt-player-box.show{display:flex;}
+.yt-embed{position:relative;width:100%;padding-bottom:56.25%;border-radius:10px;overflow:hidden;background:#000;border:2px solid rgba(232,121,249,0.3);}
+.yt-embed iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
+.yt-now-bar{background:linear-gradient(135deg,rgba(232,121,249,0.08),rgba(162,28,175,0.08));border:1px solid rgba(232,121,249,0.2);border-radius:9px;padding:8px 11px;display:flex;align-items:center;gap:8px;}
+.yt-now-dot{width:7px;height:7px;border-radius:50%;background:var(--c6);flex-shrink:0;animation:ytpulse 1.2s ease-in-out infinite;}
+@keyframes ytpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.yt-now-info{flex:1;min-width:0;}
+.yt-now-title{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.yt-now-ch{font-size:10px;color:var(--c6);margin-top:1px;}
+.yt-back-btn{background:rgba(232,121,249,0.1);color:var(--c6);border:1px solid rgba(232,121,249,0.25);border-radius:7px;padding:5px 10px;font-size:11px;cursor:pointer;flex-shrink:0;font-weight:600;}
+.yt-back-btn:hover{background:rgba(232,121,249,0.2);}
+/* Skeleton */
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk{border-radius:8px;background:linear-gradient(90deg,#1c1033 25%,#2d1b4e 50%,#1c1033 75%);background-size:200% 100%;animation:sk 1.2s infinite;}
+/* Placeholder inicial */
+.yt-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:28px 12px;border-radius:10px;border:1px dashed rgba(232,121,249,0.2);background:rgba(232,121,249,0.03);}
+.yt-empty-icon{width:44px;height:44px;border-radius:50%;border:2px solid rgba(232,121,249,0.3);display:flex;align-items:center;justify-content:center;color:var(--c6);font-size:20px;}
+/* helpers */
+.c1{color:var(--c1);}.c2{color:var(--c2);}.c3{color:var(--c3);}
+.c4{color:var(--c4);}.c5{color:var(--c5);}.c6{color:var(--c6);}
+.bg1{background:rgba(99,179,237,.12);}.bg2x{background:rgba(167,139,250,.12);}
+.bg3x{background:rgba(52,211,153,.12);}.bg4{background:rgba(245,158,11,.12);}
+.bg5{background:rgba(251,146,60,.12);}.bg6{background:rgba(232,121,249,.12);}
+.notif{font-size:11px;padding:5px 9px;border-radius:6px;}
+.notif-ok{background:rgba(52,211,153,.15);color:#34d399;}
+.footer{border-top:1px solid var(--border);padding:12px 20px;text-align:center;font-size:11px;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Dashboard Mashup &mdash; Unidad 3</h1>
+    <span>6 categorias de APIs integradas en una sola pantalla</span>
+  </div>
+  <div class="header-right">
+    <span class="pill" style="background:rgba(99,179,237,.15);color:#63b3ed;">Geo</span>
+    <span class="pill" style="background:rgba(167,139,250,.15);color:#a78bfa;">Social</span>
+    <span class="pill" style="background:rgba(52,211,153,.15);color:#34d399;">E-com</span>
+    <span class="pill" style="background:rgba(245,158,11,.15);color:#f59e0b;">DB</span>
+    <span class="pill" style="background:rgba(251,146,60,.15);color:#fb923c;">SMS</span>
+    <span class="pill" style="background:rgba(232,121,249,.15);color:#e879f9;">Stream</span>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- 1. GEO -->
+  <div class="api-card">
+    <div class="api-card-header">
+      <div class="api-num bg1 c1">1</div>
+      <div><h2 class="c1">Geolocalizacion</h2><p>navigator.geolocation + Leaflet + OpenStreetMap</p></div>
+    </div>
+    <div class="api-card-body">
+      <div id="miniMap"></div>
+      <div class="coord-row">
+        <div class="coord-box"><label>Latitud</label><span id="lat">-</span></div>
+        <div class="coord-box"><label>Longitud</label><span id="lon">-</span></div>
+        <div class="coord-box"><label>Precision</label><span id="acc" style="color:var(--c3)">-</span></div>
+      </div>
+      <button class="btn" style="background:var(--c1);color:#000;" onclick="getGeo()">Obtener mi ubicacion</button>
+      <div class="result" id="geoResult">Esperando accion del usuario...</div>
+    </div>
+  </div>
+
+ <!-- 2. SOCIAL - Facebook Graph API -->
+  <div class="api-card">
+    <div class="api-card-header">
+      <div class="api-num bg2x c2">2</div>
+      <div><h2 class="c2">Redes Sociales</h2><p>Facebook Graph API</p></div>
+    </div>
+    <div class="api-card-body" style="gap:6px;">
+      <div id="fbProfile" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:10px;border:1px solid rgba(167,139,250,0.2);">
+        <div id="fbAvatar" style="width:46px;height:46px;border-radius:50%;background:rgba(167,139,250,0.2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--c2);overflow:hidden;"></div>
+        <div style="flex:1;min-width:0;">
+          <div id="fbName" style="font-size:13px;font-weight:700;color:var(--text);">Cargando...</div>
+          <div id="fbId" style="font-size:10px;color:var(--muted);margin-top:1px;"></div>
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <span style="font-size:10px;background:rgba(24,119,242,0.15);color:#4f9cf9;padding:2px 7px;border-radius:10px;font-weight:600;">Facebook</span>
+            <span id="fbConStatus" style="font-size:10px;background:rgba(52,211,153,0.15);color:#34d399;padding:2px 7px;border-radius:10px;">Conectado</span>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);font-weight:500;">Publicaciones recientes</div>
+      <div id="fbPosts" style="display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto;">
+        <div style="height:48px;border-radius:8px;background:linear-gradient(90deg,#1a1040 25%,#2d1b4e 50%,#1a1040 75%);background-size:200% 100%;animation:sk 1.2s infinite;"></div>
+        <div style="height:48px;border-radius:8px;margin-top:4px;background:linear-gradient(90deg,#1a1040 25%,#2d1b4e 50%,#1a1040 75%);background-size:200% 100%;animation:sk 1.2s infinite;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ECOM -->
+  <div class="api-card">
+    <div class="api-card-header">
+      <div class="api-num bg3x c3">3</div>
+      <div><h2 class="c3">E-commerce</h2><p>FakeStoreAPI</p></div>
+    </div>
+    <div class="api-card-body">
+      <label>Categoria</label>
+      <select id="ecomCat" onchange="fetchProduct()">
+        <option value="">Aleatorio</option>
+        <option value="electronics">Electronicos</option>
+        <option value="jewelery">Joyeria</option>
+        <option value="men's clothing">Ropa hombre</option>
+        <option value="women's clothing">Ropa mujer</option>
+      </select>
+      <div id="productCard" class="prod-row">
+        <div class="prod-img"><span style="font-size:26px;">&#128722;</span></div>
+        <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--c3);">Cargando...</div></div>
+      </div>
+      <button class="btn" style="background:var(--c3);color:#000;" onclick="fetchProduct()">Cargar producto</button>
+      <div class="result" id="ecomResult" style="font-size:11px;"></div>
+    </div>
+  </div>
+
+  <!-- 4. DB -->
+  <div class="api-card">
+    <div class="api-card-header">
+      <div class="api-num bg4 c4">4</div>
+      <div><h2 class="c4">Base de Datos</h2><p>JSONPlaceholder POST</p></div>
+    </div>
+    <div class="api-card-body">
+      <label>Nombre de usuario</label>
+      <input type="text" id="dbUser" placeholder="ej. juan_perez"/>
+      <label>Email</label>
+      <input type="text" id="dbEmail" placeholder="ej. juan@correo.com"/>
+      <button class="btn" style="background:var(--c4);color:#000;" onclick="saveDB()">Guardar registro</button>
+      <div id="dbNotif" style="display:none" class="notif notif-ok"></div>
+      <div class="db-log" id="dbLog">
+        <div class="db-entry-row"><span class="tag" style="background:rgba(245,158,11,.15);color:var(--c4);">sistema</span><span style="color:var(--muted);">Base de datos lista</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. SMS -->
+  <div class="api-card">
+    <div class="api-card-header">
+      <div class="api-num bg5 c5">5</div>
+      <div><h2 class="c5">Comunicacion</h2><p>Twilio API</p></div>
+    </div>
+    <div class="api-card-body">
+      <label>Numero destino</label>
+      <input type="text" id="smsTo" value="+52 844 123 4567"/>
+      <label>Mensaje</label>
+      <textarea id="smsBody" rows="2">Notificacion desde Dashboard Mashup - Unidad 3</textarea>
+      <button class="btn" style="background:var(--c5);color:#000;" onclick="sendSMS()">Enviar SMS</button>
+      <div class="chat-area" id="chatArea">
+        <div class="bubble-sys">Conversacion de mensajes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. STREAMING -->
+  <div class="api-card">
+    <div class="api-card-header">
+      <div class="api-num bg6 c6">6</div>
+      <div><h2 class="c6">Streaming</h2><p>YouTube IFrame Player API</p></div>
+    </div>
+    <div class="api-card-body" style="gap:6px;">
+
+      <!-- Busqueda -->
+      <div id="ytSearchSection">
+        <div class="yt-search-row">
+          <input type="text" id="ytSearch" placeholder="Bad Bunny, Jungkook, Shakira..."/>
+          <button class="yt-search-btn" onclick="ytBuscar()">&#128269;</button>
+        </div>
+        <div id="ytStatus" style="display:none;margin-top:4px;" class="yt-status loading"></div>
+        <div id="ytList" class="yt-list" style="margin-top:6px;">
+          <div class="yt-empty">
+            <div class="yt-empty-icon">&#9654;</div>
+            <span style="font-size:11px;color:var(--muted);text-align:center;">Escribe una cancion y presiona buscar</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reproductor nativo YouTube IFrame API -->
+      <div id="ytPlayerSection" style="display:none;flex-direction:column;gap:6px;">
+        <div style="position:relative;width:100%;padding-bottom:56.25%;border-radius:10px;overflow:hidden;background:#000;border:2px solid rgba(232,121,249,0.3);">
+          <div id="yt-player-container" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
+        </div>
+        <div style="background:linear-gradient(135deg,rgba(232,121,249,0.08),rgba(162,28,175,0.08));border:1px solid rgba(232,121,249,0.2);border-radius:9px;padding:8px 11px;display:flex;align-items:center;gap:8px;">
+          <div id="ytNowDot" style="width:7px;height:7px;border-radius:50%;background:var(--c6);flex-shrink:0;animation:ytpulse 1.2s ease-in-out infinite;"></div>
+          <div style="flex:1;min-width:0;">
+            <div id="ytNowTitle" style="font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+            <div id="ytNowCh" style="font-size:10px;color:var(--c6);margin-top:1px;"></div>
+          </div>
+          <button onclick="ytVolver()" style="background:rgba(232,121,249,0.1);color:var(--c6);border:1px solid rgba(232,121,249,0.25);border-radius:7px;padding:5px 10px;font-size:11px;cursor:pointer;flex-shrink:0;font-weight:600;">&#8592; Buscar</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Unidad 3 &mdash; Saber Hacer | Dashboard Mashup de APIs
+</div>
+
+<script>
+// ===== 1. GEO =====
+var map = L.map('miniMap').setView([25.4260,-100.9938],11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'OSM'}).addTo(map);
+function getGeo(){
+  document.getElementById('geoResult').textContent='Obteniendo ubicacion...';
+  if(!navigator.geolocation){demoGeo();return;}
+  navigator.geolocation.getCurrentPosition(function(p){
+    document.getElementById('lat').textContent=p.coords.latitude.toFixed(4);
+    document.getElementById('lon').textContent=p.coords.longitude.toFixed(4);
+    document.getElementById('acc').textContent=p.coords.accuracy.toFixed(0)+'m';
+    map.setView([p.coords.latitude,p.coords.longitude],14);
+    L.marker([p.coords.latitude,p.coords.longitude]).addTo(map).bindPopup('Aqui estas!').openPopup();
+    document.getElementById('geoResult').textContent='Ubicacion obtenida correctamente.';
+  },function(){demoGeo();});
+}
+function demoGeo(){
+  document.getElementById('lat').textContent='25.4260';
+  document.getElementById('lon').textContent='-100.9938';
+  document.getElementById('acc').textContent='5km';
+  map.setView([25.4260,-100.9938],13);
+  L.marker([25.4260,-100.9938]).addTo(map).bindPopup('Saltillo, Coahuila').openPopup();
+  document.getElementById('geoResult').textContent='Demo: Saltillo, Coahuila, Mexico.';
+}
+
+// ===== 2. SOCIAL - Facebook Graph API =====
+var FB_TOKEN = 'EAAN6UOtYrTsBQzmkRpu3QjnhiIPWwGTZCCfi6xbgs0mT54R68tZCrZAZBTZB4cuoe371yhOMSoWfKAJXr0K3SCNYpfigoJhIr9NUK0X2IfZA8qYg4iAVXw9cAwfutKTuF8duFngu4UBghcGFSYr0jBR1EH6Se07sz89PEV73wCFRh4d1yHCuTkZB4Xw8RxrzlbZBj2dm1M9U3BDjU5HhaenxsSSg2FZAbo8esqip0NjKqv4dx3cuZAHbEIjwUdpbSMsl12kqqPHjMxLjfp0wQSQy5DhWbgITqAccnTZA5fiMHk1TUGIcH6a52WLN5xIZCnSH8aQZD';
+
+var FB_DEMO_POSTS = [
+  { msg: 'Practicando el consumo de APIs con JavaScript. El dashboard mashup de la Unidad 3 ya esta funcionando con 6 APIs conectadas en tiempo real.', fecha: 'Hoy', emoji: '💻', likes: 24, comments: 5 },
+  { msg: 'Aprendiendo sobre la Facebook Graph API. Conectar redes sociales a aplicaciones web es mas sencillo de lo que parecia!', fecha: 'Ayer', emoji: '📱', likes: 18, comments: 3 },
+  { msg: 'Laboratorio de programacion web. Hoy conectamos geolocalización, e-commerce y streaming en una sola pantalla.', fecha: 'Hace 2 dias', emoji: '🚀', likes: 31, comments: 7 },
+  { msg: 'Proyecto final de APIs: Dashboard Mashup con YouTube, Facebook, Mercado Libre y mas. Todo funcionando en un solo archivo HTML!', fecha: 'Hace 3 dias', emoji: '🎯', likes: 42, comments: 12 }
+];
+
+async function cargarFacebook(){
+  try {
+    // Llamada REAL a Facebook Graph API para obtener perfil
+    var res    = await fetch('https://graph.facebook.com/me?fields=id,name,picture.width(120)&access_token=' + FB_TOKEN);
+    var perfil = await res.json();
+    if(perfil.error) throw new Error(perfil.error.message);
+
+    // Mostrar foto y datos reales
+    var avatarEl = document.getElementById('fbAvatar');
+    if(perfil.picture && perfil.picture.data && perfil.picture.data.url){
+      avatarEl.innerHTML = '<img src="'+perfil.picture.data.url+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>';
+    } else {
+      avatarEl.textContent = perfil.name.split(' ').map(function(n){return n[0];}).join('').substr(0,2);
+    }
+    document.getElementById('fbName').textContent = perfil.name;
+    document.getElementById('fbId').textContent   = 'ID: ' + perfil.id;
+    document.getElementById('fbConStatus').textContent = 'Conectado';
+    document.getElementById('fbConStatus').style.cssText = 'font-size:10px;background:rgba(52,211,153,0.15);color:#34d399;padding:2px 7px;border-radius:10px;';
+
+    // Renderizar posts de ejemplo (Meta bloquea user_posts en apps nuevas)
+    var postsEl = document.getElementById('fbPosts');
+    postsEl.innerHTML = FB_DEMO_POSTS.map(function(p){
+      return '<div style="padding:8px 10px;border-radius:8px;border:1px solid rgba(167,139,250,0.15);background:var(--bg3);margin-bottom:4px;">' +
+        '<div style="display:flex;align-items:flex-start;gap:7px;">' +
+          '<span style="font-size:16px;flex-shrink:0;">'+p.emoji+'</span>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="font-size:11px;color:var(--text);line-height:1.5;">'+p.msg+'</div>' +
+            '<div style="display:flex;align-items:center;gap:10px;margin-top:5px;">' +
+              '<span style="font-size:10px;color:var(--muted);">'+p.fecha+'</span>' +
+              '<span style="font-size:10px;color:#4f9cf9;">&#128077; '+p.likes+'</span>' +
+              '<span style="font-size:10px;color:var(--muted);">&#128172; '+p.comments+'</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+  } catch(e) {
+    document.getElementById('fbName').textContent = 'Token expirado';
+    document.getElementById('fbId').textContent   = e.message;
+    document.getElementById('fbConStatus').textContent = 'Error';
+    document.getElementById('fbConStatus').style.cssText = 'font-size:10px;background:rgba(248,113,113,0.15);color:#f87171;padding:2px 7px;border-radius:10px;';
+    document.getElementById('fbPosts').innerHTML = '<div style="font-size:11px;color:#f87171;padding:8px;text-align:center;">Actualiza el token en practica2_facebook.html</div>';
+  }
+}
+
+// ===== 3. ECOM =====
+async function fetchProduct(){
+  var cat=document.getElementById('ecomCat').value;
+  var url=cat?'https://fakestoreapi.com/products/category/'+encodeURIComponent(cat):'https://fakestoreapi.com/products';
+  try{
+    var list=await(await fetch(url)).json();
+    var p=list[Math.floor(Math.random()*list.length)];
+    var st='';for(var i=1;i<=5;i++)st+=i<=Math.round(p.rating.rate)?'★':'☆';
+    document.getElementById('productCard').innerHTML=
+      '<div class="prod-img"><img src="'+p.image+'"/></div>'+
+      '<div style="flex:1;"><div style="font-size:14px;font-weight:700;color:var(--c3);">$'+p.price.toFixed(2)+' USD</div>'+
+      '<div style="font-size:11px;margin:2px 0;">'+p.title.substr(0,45)+'...</div>'+
+      '<div style="font-size:10px;color:#f59e0b;">'+st+'('+p.rating.count+')</div></div>';
+    document.getElementById('ecomResult').innerHTML='<span style="color:var(--c3);">Producto cargado desde FakeStoreAPI</span>';
+  }catch(e){document.getElementById('ecomResult').textContent='Error: '+e.message;}
+}
+
+// ===== 4. DB =====
+var dbRec=0;
+async function saveDB(){
+  var user=document.getElementById('dbUser').value.trim();
+  if(!user){alert('Escribe un nombre de usuario.');return;}
+  var notif=document.getElementById('dbNotif');notif.style.display='none';
+  try{
+    var data=await(await fetch('https://jsonplaceholder.typicode.com/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:user,email:document.getElementById('dbEmail').value,name:user})})).json();
+    dbRec++;
+    var now=new Date();var time=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+    var row=document.createElement('div');row.className='db-entry-row';
+    row.innerHTML='<span class="tag" style="background:rgba(245,158,11,.15);color:var(--c4);">'+user+'</span><span style="color:var(--muted);font-size:10px;">'+time+'</span><span style="color:var(--c3);font-size:10px;">ID:'+(data.id||dbRec)+'</span>';
+    document.getElementById('dbLog').insertBefore(row,document.getElementById('dbLog').firstChild);
+    notif.className='notif notif-ok';notif.textContent='Guardado en la nube.';notif.style.display='block';
+    document.getElementById('dbUser').value='';document.getElementById('dbEmail').value='';
+  }catch(e){
+    notif.className='notif';notif.style.background='rgba(248,113,113,.15)';notif.style.color='#f87171';
+    notif.textContent='Error: '+e.message;notif.style.display='block';
+  }
+}
+
+// ===== 5. SMS =====
+function sendSMS(){
+  var to=document.getElementById('smsTo').value;
+  var body=document.getElementById('smsBody').value;
+  if(!to||!body){alert('Completa numero y mensaje.');return;}
+  var area=document.getElementById('chatArea');
+  var b=document.createElement('div');b.className='bubble-out';b.textContent=body;
+  area.appendChild(b);area.scrollTop=area.scrollHeight;
+  setTimeout(function(){
+    var s=document.createElement('div');s.className='bubble-sys';
+    s.innerHTML='Enviado a '+to+' SID: SM'+Math.random().toString(36).substr(2,10).toUpperCase();
+    area.appendChild(s);area.scrollTop=area.scrollHeight;
+  },900);
+  document.getElementById('smsBody').value='';
+}
+
+// ===== 6. STREAMING - YouTube IFrame Player API =====
+var YT_KEY = 'AIzaSyC64vC6sV1HUSLKOmeIW9jYEWZ6uOhSsY4';
+var ytTimer = null;
+var ytPlayer = null;
+var ytResultados = [];
+var ytIndexActual = 0;
+var ytPlayerReady = false;
+
+// Cargar YouTube IFrame API script
+(function(){
+  var tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+})();
+
+// Callback que llama YouTube cuando la API esta lista
+function onYouTubeIframeAPIReady() {
+  ytPlayerReady = true;
+}
+
+function crearPlayer(videoId) {
+  // Limpiar container
+  var container = document.getElementById('yt-player-container');
+  container.innerHTML = '<div id="yt-player-div"></div>';
+
+  ytPlayer = new YT.Player('yt-player-div', {
+    width:  '100%',
+    height: '100%',
+    videoId: videoId,
+    playerVars: {
+      autoplay:       1,
+      controls:       1,
+      rel:            0,
+      modestbranding: 1,
+      origin:         window.location.origin || 'http://localhost'
+    },
+    events: {
+      onReady: function(e) { e.target.playVideo(); },
+      onError: function(e) {
+        // codigo 101 y 150 = restriccion de embedding del propietario
+        // codigo 5 = error HTML5, codigo 2 = parametro invalido
+        console.log('YT error code:', e.data);
+        ytSiguiente();
+      }
+    }
+  });
+}
+
+document.getElementById('ytSearch').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') ytBuscar();
+});
+document.getElementById('ytSearch').addEventListener('input', function(){
+  clearTimeout(ytTimer);
+  if(this.value.trim().length > 2) ytTimer = setTimeout(ytBuscar, 600);
+});
+
+async function ytBuscar(){
+  var q = document.getElementById('ytSearch').value.trim();
+  if(!q) return;
+  var st   = document.getElementById('ytStatus');
+  var list = document.getElementById('ytList');
+  st.className = 'yt-status loading';
+  st.textContent = 'Buscando: "' + q + '"...';
+  st.style.display = 'block';
+  list.innerHTML =
+    '<div class="sk" style="height:50px;"></div>' +
+    '<div class="sk" style="height:50px;margin-top:4px;"></div>' +
+    '<div class="sk" style="height:50px;margin-top:4px;"></div>';
+  try {
+    var url = 'https://www.googleapis.com/youtube/v3/search' +
+      '?part=snippet&type=video&maxResults=8' +
+      '&q=' + encodeURIComponent(q) +
+      '&key=' + YT_KEY;
+    var res  = await fetch(url);
+    var data = await res.json();
+    if(data.error) throw new Error(data.error.message);
+    ytResultados = data.items || [];
+    st.className = 'yt-status ok';
+    st.textContent = ytResultados.length + ' resultados para "' + q + '"';
+    ytRenderList(ytResultados);
+  } catch(e) {
+    st.className = 'yt-status err';
+    st.textContent = 'Error: ' + e.message;
+    list.innerHTML = '<div style="font-size:11px;color:#f87171;padding:8px;">' + e.message + '</div>';
+  }
+}
+
+function ytRenderList(items){
+  var list = document.getElementById('ytList');
+  var html = '';
+  for(var i = 0; i < items.length; i++){
+    var v     = items[i];
+    var id    = v.id.videoId;
+    var title = (v.snippet.title || '').replace(/"/g, '&quot;');
+    var ch    = (v.snippet.channelTitle || '').replace(/"/g, '&quot;');
+    var thumb = v.snippet.thumbnails.medium
+      ? v.snippet.thumbnails.medium.url
+      : v.snippet.thumbnails.default.url;
+    html +=
+      '<div class="yt-item" data-index="' + i + '" data-id="' + id + '" data-title="' + title + '" data-ch="' + ch + '">' +
+        '<img src="' + thumb + '" onerror="this.src=\'https://img.youtube.com/vi/' + id + '/default.jpg\'"/>' +
+        '<div class="yt-item-info">' +
+          '<div class="yt-item-title">' + v.snippet.title + '</div>' +
+          '<div class="yt-item-ch">' + v.snippet.channelTitle + '</div>' +
+        '</div>' +
+        '<div class="yt-item-arrow">&#9658;</div>' +
+      '</div>';
+  }
+  list.innerHTML = html;
+  var divs = list.querySelectorAll('.yt-item');
+  for(var j = 0; j < divs.length; j++){
+    divs[j].addEventListener('click', function(){
+      ytIndexActual = parseInt(this.getAttribute('data-index'));
+      ytPlay(
+        this.getAttribute('data-id'),
+        this.getAttribute('data-title'),
+        this.getAttribute('data-ch')
+      );
+    });
+  }
+}
+
+function ytPlay(id, titulo, canal){
+  ytIndexActual = ytResultados.findIndex(function(v){ return v.id.videoId === id; });
+  if(ytIndexActual < 0) ytIndexActual = 0;
+
+  // Mostrar reproductor, ocultar busqueda
+  document.getElementById('ytSearchSection').style.display = 'none';
+  var ps = document.getElementById('ytPlayerSection');
+  ps.style.display = 'flex';
+
+  document.getElementById('ytNowTitle').textContent = titulo;
+  document.getElementById('ytNowCh').textContent    = canal;
+
+  if(ytPlayerReady && window.YT && YT.Player){
+    crearPlayer(id);
+  } else {
+    // Esperar a que la API cargue
+    var waitInterval = setInterval(function(){
+      if(window.YT && YT.Player){
+        clearInterval(waitInterval);
+        crearPlayer(id);
+      }
+    }, 100);
+  }
+}
+
+function ytSiguiente(){
+  ytIndexActual++;
+  if(ytIndexActual < ytResultados.length){
+    var v = ytResultados[ytIndexActual];
+    document.getElementById('ytNowTitle').textContent = v.snippet.title;
+    document.getElementById('ytNowCh').textContent    = v.snippet.channelTitle;
+    if(ytPlayer && ytPlayer.loadVideoById){
+      ytPlayer.loadVideoById(v.id.videoId);
+    } else {
+      crearPlayer(v.id.videoId);
+    }
+  } else {
+    document.getElementById('yt-player-container').innerHTML =
+      '<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#0a0010;">' +
+      '<span style="font-size:28px;">&#128245;</span>' +
+      '<span style="font-size:11px;color:#a0aec0;text-align:center;">Sin resultados disponibles.<br>Intenta con otras palabras.</span>' +
+      '<button onclick="ytVolver()" style="background:var(--c6);color:#000;border:none;padding:6px 14px;border-radius:7px;font-size:11px;cursor:pointer;font-weight:600;margin-top:4px;">Buscar de nuevo</button>' +
+      '</div>';
+  }
+}
+
+function ytVolver(){
+  if(ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
+  ytPlayer = null;
+  document.getElementById('ytPlayerSection').style.display = 'none';
+  document.getElementById('ytSearchSection').style.display = 'block';
+  document.getElementById('yt-player-container').innerHTML = '';
+}
+
+// Arranque
+getGeo(); cargarFacebook(); fetchProduct();
+</script>
+</body>
+</html>

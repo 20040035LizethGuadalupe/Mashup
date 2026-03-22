@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Práctica 5 — Protocolos de Comunicación</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #160a00; color: #e2e8f0; min-height: 100vh; padding: 24px; }
+    h1 { font-size: 22px; font-weight: 600; color: #fb923c; margin-bottom: 4px; }
+    .subtitle { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+    .badge { display: inline-block; background: #431407; color: #fb923c; font-size: 11px; padding: 3px 10px; border-radius: 20px; margin-bottom: 16px; font-weight: 500; }
+    .card { background: #1f1007; border: 1px solid #431407; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    label { font-size: 12px; color: #a0aec0; display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+    input[type=text], textarea, select { background: #160a00; border: 1px solid #431407; color: #e2e8f0; padding: 9px 14px; border-radius: 8px; font-size: 14px; width: 100%; margin-bottom: 12px; }
+    textarea { resize: none; }
+    .char-count { font-size: 11px; color: #64748b; text-align: right; margin-top: -10px; margin-bottom: 10px; }
+    .btn { background: #ea580c; color: white; border: none; padding: 10px 22px; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 500; width: 100%; transition: background 0.2s; }
+    .btn:hover { background: #c2410c; }
+    .btn:disabled { background: #431407; color: #64748b; cursor: not-allowed; }
+    .btn-sms { background: #16a34a; }
+    .btn-sms:hover { background: #15803d; }
+    .btn-email { background: #1d4ed8; }
+    .btn-email:hover { background: #1e40af; }
+    .btn-push { background: #7c3aed; }
+    .btn-push:hover { background: #6d28d9; }
+    .phone-mockup { width: 200px; margin: 0 auto; }
+    .phone-frame { background: #0f0f0f; border-radius: 32px; border: 3px solid #374151; padding: 16px 12px; position: relative; }
+    .phone-notch { width: 60px; height: 8px; background: #374151; border-radius: 4px; margin: 0 auto 12px; }
+    .phone-screen { background: #111827; border-radius: 16px; min-height: 300px; padding: 10px; overflow-y: auto; }
+    .bubble { max-width: 85%; border-radius: 14px; padding: 8px 12px; margin: 5px; font-size: 12px; line-height: 1.5; }
+    .bubble-in { background: #374151; color: #e2e8f0; margin-left: 0; border-bottom-left-radius: 4px; }
+    .bubble-out { background: #fb923c; color: white; margin-left: auto; border-bottom-right-radius: 4px; text-align: right; }
+    .bubble-time { font-size: 10px; opacity: 0.6; margin-top: 3px; }
+    .bubble-sender { font-size: 10px; color: #fb923c; margin-bottom: 2px; font-weight: 600; }
+    .msg-status { font-size: 11px; padding: 8px 12px; border-radius: 8px; margin-top: 10px; }
+    .msg-sending { background: #431407; color: #fb923c; }
+    .msg-sent { background: #064e3b; color: #34d399; }
+    .msg-failed { background: #7f1d1d; color: #f87171; }
+    .protocol-info { background: #160a00; border: 1px solid #431407; border-radius: 8px; padding: 12px; margin-top: 12px; }
+    .protocol-info h3 { font-size: 13px; color: #fb923c; margin-bottom: 8px; }
+    .protocol-info p { font-size: 12px; color: #a0aec0; line-height: 1.5; }
+    pre { background: #160a00; border: 1px solid #431407; border-radius: 8px; padding: 14px; font-size: 12px; color: #a0aec0; overflow-x: auto; line-height: 1.6; }
+    .log-area { font-family: monospace; font-size: 11px; color: #64748b; max-height: 140px; overflow-y: auto; background: #160a00; padding: 10px; border-radius: 8px; border: 1px solid #431407; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+    .tab { background: transparent; border: 1px solid #431407; color: #a0aec0; padding: 7px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .tab.active { background: #431407; color: #fb923c; border-color: #ea580c; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .sid-box { font-family: monospace; font-size: 12px; color: #fb923c; background: #431407; padding: 6px 10px; border-radius: 6px; word-break: break-all; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="badge">API #5 — Protocolos de Comunicación</div>
+  <h1>SMS, Email y Notificaciones Push</h1>
+  <p class="subtitle">Simula el envío de mensajes usando Twilio API (SMS), EmailJS (Email) y Web Push Notifications</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('sms')">📱 SMS (Twilio)</button>
+    <button class="tab" onclick="showTab('email')">✉️ Email</button>
+    <button class="tab" onclick="showTab('push')">🔔 Push Notification</button>
+  </div>
+
+  <!-- TAB SMS -->
+  <div class="tab-content active" id="tab-sms">
+    <div style="display:grid;grid-template-columns:1fr 220px;gap:16px;">
+      <div class="card">
+        <p style="font-size:13px;color:#a0aec0;margin-bottom:14px;">🔗 API: <code style="color:#fb923c">POST https://api.twilio.com/2010-04-01/Accounts/{SID}/Messages.json</code></p>
+        <label>Número destino</label>
+        <input type="text" id="smsDest" value="+52 844 123 4567" placeholder="+52 844 000 0000" />
+        <label>Número origen (Twilio)</label>
+        <input type="text" id="smsFrom" value="+1 (512) 000-0000" />
+        <label>Mensaje (max 160 caracteres)</label>
+        <textarea id="smsMsg" rows="3" oninput="updateCount()" maxlength="160">Hola! Este es un mensaje de prueba enviado desde la API de Twilio. Unidad 3 — APIs.</textarea>
+        <div class="char-count"><span id="charCount">82</span>/160 caracteres</div>
+        <label>Tipo de mensaje</label>
+        <select id="msgType">
+          <option value="sms">SMS estándar</option>
+          <option value="mms">MMS (con imagen)</option>
+          <option value="whatsapp">WhatsApp Business</option>
+        </select>
+        <button class="btn btn-sms" onclick="enviarSMS()">📤 Enviar SMS</button>
+        <div id="smsStatus" style="display:none" class="msg-status msg-sending"></div>
+        <div id="smsSID" style="display:none"></div>
+        <div class="protocol-info" style="margin-top:14px;">
+          <h3>¿Cómo funciona Twilio SMS API?</h3>
+          <p>1. Registrar cuenta Twilio → obtener Account SID y Auth Token<br>
+          2. Adquirir número de teléfono virtual<br>
+          3. Hacer petición HTTP POST con credenciales Basic Auth<br>
+          4. El API retorna un SID único por mensaje enviado<br>
+          5. Twilio entrega el SMS al operador de destino</p>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:12px;color:#a0aec0;margin-bottom:8px;text-align:center;">Vista previa del teléfono</p>
+        <div class="phone-mockup">
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-screen" id="phoneScreen">
+              <div style="font-size:10px;color:#64748b;text-align:center;margin-bottom:8px;">Mensajes — Hoy</div>
+              <div class="bubble bubble-in">
+                <div class="bubble-sender">Twilio #1 (512)</div>
+                Bienvenido al laboratorio de APIs. Tu código es: 8472
+                <div class="bubble-time">09:00 AM ✓✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB EMAIL -->
+  <div class="tab-content" id="tab-email">
+    <div class="card">
+      <p style="font-size:13px;color:#a0aec0;margin-bottom:14px;">🔗 Protocolo SMTP simulado — EmailJS API / Nodemailer</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label>Para (destinatario)</label>
+          <input type="text" id="emailTo" placeholder="destino@correo.com" value="profesor@universidad.edu.mx" />
+          <label>De (remitente)</label>
+          <input type="text" id="emailFrom" placeholder="tu@correo.com" value="alumno@lab.edu.mx" />
+          <label>Asunto</label>
+          <input type="text" id="emailSubject" value="Entrega — Práctica 5: Protocolos de comunicación" />
+        </div>
+        <div>
+          <label>Cuerpo del mensaje</label>
+          <textarea id="emailBody" rows="6" style="min-height:138px;">Estimado profesor,
+
+Adjunto evidencia de la práctica 5 sobre protocolos de comunicación usando APIs REST.
+
+Atentamente,
+Alumno del laboratorio</textarea>
+        </div>
+      </div>
+      <button class="btn btn-email" style="margin-top:4px;" onclick="enviarEmail()">✉️ Enviar Email (SMTP)</button>
+      <div id="emailStatus" style="display:none" class="msg-status msg-sending"></div>
+    </div>
+  </div>
+
+  <!-- TAB PUSH -->
+  <div class="tab-content" id="tab-push">
+    <div class="card">
+      <p style="font-size:13px;color:#a0aec0;margin-bottom:14px;">🔔 Web Push Notification — API del navegador</p>
+      <label>Título de la notificación</label>
+      <input type="text" id="pushTitle" value="🔔 Aviso del laboratorio" />
+      <label>Cuerpo del mensaje</label>
+      <input type="text" id="pushBody" value="Práctica 5 completada: ¡API de notificaciones funcionando!" />
+      <label>URL de ícono (opcional)</label>
+      <input type="text" id="pushIcon" value="https://cdn-icons-png.flaticon.com/32/1680/1680834.png" />
+      <button class="btn btn-push" onclick="enviarPush()">🔔 Enviar notificación Push</button>
+      <div id="pushStatus" style="display:none" class="msg-status msg-sending"></div>
+      <div class="protocol-info" style="margin-top:14px;">
+        <h3>¿Cómo funciona Web Push API?</h3>
+        <p>1. Solicitar permiso al usuario con Notification.requestPermission()<br>
+        2. Si acepta → crear la notificación con new Notification(titulo, opciones)<br>
+        3. Para push real en segundo plano → necesita Service Worker + servidor VAPID<br>
+        4. El navegador muestra la notificación como alerta nativa del sistema</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p style="font-size:13px;color:#a0aec0;margin-bottom:8px;font-weight:500;">Log de comunicaciones</p>
+    <div class="log-area" id="commLog">
+      <span style="color:#fb923c">[SISTEMA]</span> Módulo de comunicaciones listo. Elige un protocolo...<br>
+    </div>
+  </div>
+
+  <div class="card">
+    <p style="font-size:13px;color:#a0aec0;margin-bottom:8px;font-weight:500;">Código fuente — Twilio SMS (Node.js / backend)</p>
+    <pre>// BACKEND (Node.js + Express) — Enviar SMS con Twilio
+const twilio = require('twilio');
+
+const client = twilio(
+  process.env.TWILIO_ACCOUNT_SID,   // Tu Account SID
+  process.env.TWILIO_AUTH_TOKEN     // Tu Auth Token
+);
+
+app.post('/api/send-sms', async (req, res) => {
+  const { to, body } = req.body;
+  try {
+    const message = await client.messages.create({
+      body:  body,
+      from: '+15120000000',   // Tu número Twilio
+      to:    to
+    });
+    res.json({
+      success: true,
+      sid:     message.sid,
+      status:  message.status  // "queued" → "sent" → "delivered"
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// FRONTEND — Llamar al backend
+async function enviarSMS() {
+  const response = await fetch('/api/send-sms', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      to:   document.getElementById('smsDest').value,
+      body: document.getElementById('smsMsg').value
+    })
+  });
+  const data = await response.json();
+  console.log('SID del mensaje:', data.sid);
+}</pre>
+  </div>
+
+  <script>
+    function showTab(tab) {
+      document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.tab-content').forEach(function(t){ t.classList.remove('active'); });
+      document.getElementById('tab-' + tab).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function updateCount() {
+      var msg = document.getElementById('smsMsg').value;
+      document.getElementById('charCount').textContent = msg.length;
+    }
+
+    function log(msg, tipo) {
+      var area = document.getElementById('commLog');
+      var color = tipo === 'ok' ? '#34d399' : tipo === 'err' ? '#f87171' : '#fb923c';
+      var now = new Date();
+      var time = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+      area.innerHTML += '<span style="color:' + color + '">[' + time + ' ' + (tipo||'INFO').toUpperCase() + '] ' + msg + '</span><br>';
+      area.scrollTop = area.scrollHeight;
+    }
+
+    function addBubble(text, out) {
+      var screen = document.getElementById('phoneScreen');
+      var now = new Date();
+      var time = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0') + ' ' + (now.getHours()>=12?'PM':'AM');
+      var div = document.createElement('div');
+      div.className = 'bubble ' + (out ? 'bubble-out' : 'bubble-in');
+      if (!out) div.innerHTML = '<div class="bubble-sender">Twilio Número</div>';
+      div.innerHTML += text + '<div class="bubble-time">' + time + (out ? ' ✓✓' : '') + '</div>';
+      screen.appendChild(div);
+      screen.scrollTop = screen.scrollHeight;
+    }
+
+    function enviarSMS() {
+      var dest = document.getElementById('smsDest').value;
+      var msg = document.getElementById('smsMsg').value;
+      var tipo = document.getElementById('msgType').value;
+      var statusEl = document.getElementById('smsStatus');
+      var sidEl = document.getElementById('smsSID');
+      if (!dest || !msg) { alert('Completa destino y mensaje.'); return; }
+      log('POST /Messages.json — Para: ' + dest + ' | Tipo: ' + tipo.toUpperCase(), 'info');
+      statusEl.className = 'msg-status msg-sending';
+      statusEl.textContent = '⏳ Enviando mensaje...';
+      statusEl.style.display = 'block';
+      sidEl.style.display = 'none';
+      setTimeout(function() {
+        var sid = 'SM' + Math.random().toString(36).substr(2,12).toUpperCase() + Math.random().toString(36).substr(2,8).toUpperCase();
+        statusEl.className = 'msg-status msg-sent';
+        statusEl.textContent = '✓ Mensaje enviado correctamente a ' + dest;
+        sidEl.style.display = 'block';
+        sidEl.innerHTML = '<div class="sid-box">SID: ' + sid + '<br>Status: queued → sent → delivered<br>Price: $0.0075 USD</div>';
+        addBubble(msg, true);
+        log('✓ Mensaje entregado. SID: ' + sid, 'ok');
+      }, 1200);
+    }
+
+    function enviarEmail() {
+      var to = document.getElementById('emailTo').value;
+      var subject = document.getElementById('emailSubject').value;
+      var statusEl = document.getElementById('emailStatus');
+      log('SMTP EHLO → MAIL FROM → RCPT TO: ' + to, 'info');
+      statusEl.className = 'msg-status msg-sending';
+      statusEl.textContent = '⏳ Conectando con servidor SMTP...';
+      statusEl.style.display = 'block';
+      setTimeout(function() {
+        log('SMTP 250 OK → DATA → . (fin de mensaje)', 'info');
+        setTimeout(function() {
+          statusEl.className = 'msg-status msg-sent';
+          statusEl.textContent = '✓ Email enviado a ' + to + ' — Asunto: ' + subject;
+          log('✓ Email entregado. Message-ID: <' + Date.now() + '@lab.edu.mx>', 'ok');
+        }, 800);
+      }, 1000);
+    }
+
+    function enviarPush() {
+      var title = document.getElementById('pushTitle').value;
+      var body = document.getElementById('pushBody').value;
+      var icon = document.getElementById('pushIcon').value;
+      var statusEl = document.getElementById('pushStatus');
+      log('Notification.requestPermission() → solicitando permiso...', 'info');
+      statusEl.className = 'msg-status msg-sending';
+      statusEl.textContent = '⏳ Solicitando permiso para notificaciones...';
+      statusEl.style.display = 'block';
+      if (!('Notification' in window)) {
+        statusEl.className = 'msg-status msg-failed';
+        statusEl.textContent = '✗ Las notificaciones no están soportadas en este navegador.';
+        log('✗ API Notification no disponible', 'err');
+        return;
+      }
+      Notification.requestPermission().then(function(perm) {
+        if (perm === 'granted') {
+          new Notification(title, { body: body, icon: icon });
+          statusEl.className = 'msg-status msg-sent';
+          statusEl.textContent = '✓ Notificación enviada al sistema operativo.';
+          log('✓ Push notification entregada. Permiso: ' + perm, 'ok');
+        } else {
+          statusEl.className = 'msg-status msg-failed';
+          statusEl.textContent = '✗ Permiso denegado por el usuario.';
+          log('✗ Permiso denegado: ' + perm, 'err');
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Práctica 6 — Streaming</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Segoe UI',sans-serif;background:#0d001a;color:#e2e8f0;min-height:100vh;padding:24px;}
+    h1{font-size:22px;font-weight:600;color:#e879f9;margin-bottom:4px;}
+    .subtitle{font-size:13px;color:#64748b;margin-bottom:20px;}
+    .badge{display:inline-block;background:#3b0764;color:#e879f9;font-size:11px;padding:3px 10px;border-radius:20px;margin-bottom:16px;font-weight:500;}
+    .card{background:#130826;border:1px solid #3b0764;border-radius:12px;padding:20px;margin-bottom:16px;}
+    label{font-size:12px;color:#a0aec0;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+    input,select{background:#0d001a;border:1px solid #3b0764;color:#e2e8f0;padding:9px 14px;border-radius:8px;font-size:14px;width:100%;margin-bottom:10px;}
+    input:focus{outline:none;border-color:#a21caf;}
+    .btn{background:#a21caf;color:white;border:none;padding:9px 18px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500;}
+    .btn:hover{background:#86198f;}
+    /* Buscador */
+    .search-row{display:flex;gap:8px;}
+    .search-row input{margin:0;flex:1;}
+    .search-row .btn{white-space:nowrap;}
+    /* Resultados */
+    .results-box{display:flex;flex-direction:column;gap:5px;margin-top:10px;max-height:260px;overflow-y:auto;}
+    .res-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid rgba(232,121,249,0.2);cursor:pointer;background:#0d001a;transition:border-color .15s;}
+    .res-item:hover{border-color:#e879f9;background:#1c0533;}
+    .res-thumb{width:80px;height:54px;border-radius:6px;object-fit:cover;flex-shrink:0;background:#1c1033;}
+    .res-title{font-size:13px;font-weight:600;color:#e2e8f0;line-height:1.4;}
+    .res-ch{font-size:11px;color:#a21caf;margin-top:3px;}
+    .res-arrow{font-size:16px;color:#e879f9;flex-shrink:0;margin-left:auto;}
+    /* Reproductor YouTube nativo */
+    .player-section{display:none;}
+    .player-section.visible{display:block;}
+    .player-wrap{position:relative;width:100%;padding-bottom:56.25%;border-radius:12px;overflow:hidden;background:#000;border:1px solid #3b0764;}
+    .player-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
+    .now-bar{display:flex;align-items:center;justify-content:space-between;margin-top:10px;background:#0d001a;border:1px solid rgba(232,121,249,0.2);border-radius:8px;padding:8px 14px;}
+    .now-title{font-size:13px;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
+    .now-ch{font-size:11px;color:#a21caf;margin-top:2px;}
+    .btn-back{background:transparent;border:1px solid rgba(232,121,249,0.4);color:#e879f9;padding:5px 14px;border-radius:7px;font-size:12px;cursor:pointer;white-space:nowrap;margin-left:10px;}
+    .btn-back:hover{background:rgba(232,121,249,0.1);}
+    /* Skeleton */
+    @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .sk{border-radius:8px;background:linear-gradient(90deg,#1c1033 25%,#2d1b4e 50%,#1c1033 75%);background-size:200% 100%;animation:sk 1.2s infinite;}
+    /* Placeholder inicial */
+    .placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:50px 20px;border-radius:12px;border:1px dashed rgba(232,121,249,0.25);background:#0d001a;}
+    .play-ico{width:60px;height:60px;border-radius:50%;background:rgba(232,121,249,0.1);border:2px solid #a21caf;display:flex;align-items:center;justify-content:center;}
+    .play-tri{width:0;height:0;border-top:13px solid transparent;border-bottom:13px solid transparent;border-left:21px solid #e879f9;margin-left:4px;}
+    /* Código */
+    pre{background:#0d001a;border:1px solid #3b0764;border-radius:8px;padding:14px;font-size:12px;color:#a0aec0;overflow-x:auto;line-height:1.7;}
+    .status{font-size:12px;padding:7px 12px;border-radius:7px;margin-top:8px;}
+    .status-load{background:rgba(162,28,175,.2);color:#a21caf;}
+    .status-ok{background:#064e3b;color:#34d399;}
+    .status-err{background:#7f1d1d;color:#f87171;}
+    /* Tabs */
+    .tabs{display:flex;gap:6px;margin-bottom:16px;}
+    .tab{background:transparent;border:1px solid #3b0764;color:#a0aec0;padding:6px 16px;border-radius:8px;font-size:12px;cursor:pointer;}
+    .tab.active{background:#3b0764;color:#e879f9;border-color:#a21caf;}
+    .tab-content{display:none;}.tab-content.active{display:block;}
+  </style>
+</head>
+<body>
+
+<div class="badge">API #6 — Streaming</div>
+<h1>Plataformas Online / Streaming</h1>
+<p class="subtitle">Busca y reproduce cualquier canción por nombre — YouTube IFrame API + Invidious Search API</p>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('yt',this)">▶ YouTube</button>
+  <button class="tab" onclick="showTab('spotify',this)">🎵 Spotify</button>
+  <button class="tab" onclick="showTab('codigo',this)">💻 Código</button>
+</div>
+
+<!-- YOUTUBE -->
+<div class="tab-content active" id="tab-yt">
+  <div class="card">
+    <p style="font-size:13px;color:#a0aec0;margin-bottom:14px;">🔗 API: <code style="color:#e879f9">Invidious Search API</code> + <code style="color:#e879f9">YouTube IFrame Embed</code></p>
+
+    <!-- Sección de búsqueda -->
+    <div id="searchSection">
+      <label>Nombre de canción, artista o álbum</label>
+      <div class="search-row">
+        <input type="text" id="ytQuery" placeholder="ej. Next to you Jungkook, Shakira Waka Waka, Believer..." onkeydown="if(event.key==='Enter') buscar()"/>
+        <button class="btn" onclick="buscar()">🔍 Buscar</button>
+      </div>
+      <div id="statusBox" style="display:none" class="status status-load"></div>
+      <div class="results-box" id="resultsBox">
+        <div class="placeholder">
+          <div class="play-ico"><div class="play-tri"></div></div>
+          <p style="font-size:13px;color:#64748b;text-align:center;">Escribe el nombre de una canción<br>y presiona Buscar o Enter</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reproductor (se muestra al seleccionar) -->
+    <div class="player-section" id="playerSection">
+      <div class="player-wrap" id="playerWrap"></div>
+      <div class="now-bar">
+        <div style="flex:1;min-width:0;">
+          <div class="now-title" id="nowTitle">—</div>
+          <div class="now-ch" id="nowCh">—</div>
+        </div>
+        <button class="btn-back" onclick="volverBusqueda()">← Buscar otra</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SPOTIFY -->
+<div class="tab-content" id="tab-spotify">
+  <div class="card">
+    <p style="font-size:13px;color:#a0aec0;margin-bottom:14px;">🔗 Spotify Embed API — <code style="color:#e879f9">open.spotify.com/embed/</code></p>
+    <label>URI de Spotify</label>
+    <input type="text" id="spotUri" value="playlist/37i9dQZF1DXcBWIGoYBM5M"/>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      <button class="btn" onclick="loadSpot()">🎵 Cargar</button>
+      <button class="btn" style="background:#374151;" onclick="presetSpot('playlist/37i9dQZF1DXcBWIGoYBM5M')">Top Hits</button>
+      <button class="btn" style="background:#374151;" onclick="presetSpot('playlist/37i9dQZF1DXdqem9PBZRK9')">Coding</button>
+      <button class="btn" style="background:#374151;" onclick="presetSpot('track/4uLU6hMCjMI75M1A2tKUQC')">Blinding Lights</button>
+    </div>
+    <div id="spotArea" style="background:#0d001a;border:1px solid #3b0764;border-radius:10px;height:200px;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:13px;">Presiona Cargar</div>
+  </div>
+</div>
+
+<!-- CÓDIGO -->
+<div class="tab-content" id="tab-codigo">
+  <div class="card">
+    <p style="font-size:13px;color:#a0aec0;margin-bottom:8px;font-weight:500;">Código fuente — Búsqueda real + IFrame YouTube</p>
+    <pre>// ── PASO 1: Buscar video por nombre usando Invidious API ──────
+// Invidious es un frontend libre de YouTube con API pública.
+// No requiere API Key. Solo HTTP GET.
+
+const INVIDIOUS_HOSTS = [
+  'https://invidious.nerdvpn.de',
+  'https://inv.nadeko.net',
+  'https://invidious.privacyredirect.com'
+];
+
+async function buscar() {
+  const query = document.getElementById('ytQuery').value.trim();
+
+  // Probar hosts en orden hasta que uno responda
+  for (const host of INVIDIOUS_HOSTS) {
+    try {
+      const url = `${host}/api/v1/search`
+        + `?q=${encodeURIComponent(query)}`
+        + `&type=video&page=1`;
+
+      const res  = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      const data = await res.json();  // Array de videos
+
+      if (data && data.length > 0) {
+        renderResultados(data.slice(0, 5));
+        return;  // Éxito — salir del loop
+      }
+    } catch (e) {
+      continue;  // Probar el siguiente host
+    }
+  }
+}
+
+// ── PASO 2: Mostrar resultados ────────────────────────────────
+function renderResultados(videos) {
+  const html = videos.map(v => `
+    &lt;div class="res-item" onclick="reproducir('${v.videoId}','${v.title}','${v.author}')"&gt;
+      &lt;img src="${v.videoThumbnails[3].url}" class="res-thumb" /&gt;
+      &lt;div&gt;
+        &lt;div class="res-title"&gt;${v.title}&lt;/div&gt;
+        &lt;div class="res-ch"&gt;${v.author}&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  `).join('');
+  document.getElementById('resultsBox').innerHTML = html;
+}
+
+// ── PASO 3: Reproducir con YouTube IFrame Embed ───────────────
+function reproducir(videoId, titulo, canal) {
+  // Ocultar búsqueda, mostrar reproductor
+  document.getElementById('searchSection').style.display = 'none';
+  document.getElementById('playerSection').style.display = 'block';
+
+  // Inyectar iframe con el video seleccionado
+  document.getElementById('playerWrap').innerHTML = `
+    &lt;iframe
+      src="https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&rel=0"
+      allowfullscreen
+      allow="autoplay; encrypted-media"
+    &gt;&lt;/iframe&gt;`;
+
+  document.getElementById('nowTitle').textContent = titulo;
+  document.getElementById('nowCh').textContent    = canal;
+}
+
+// ── RESPUESTA JSON de Invidious /api/v1/search ─────────────────
+// [
+//   {
+//     "videoId":    "AbCdEfGhIjK",
+//     "title":      "Next to You - Jungkook",
+//     "author":     "HYBE LABELS",
+//     "videoThumbnails": [
+//       { "quality": "maxres", "url": "https://..." },
+//       { "quality": "medium", "url": "https://..." }
+//     ],
+//     "viewCount":  12500000,
+//     "published":  1698336000
+//   },
+//   ...
+// ]</pre>
+  </div>
+</div>
+
+<script>
+var YT_KEY = 'AIzaSyC64vC6sV1HUSLKOmeIW9jYEWZ6uOhSsY4';
+
+var ytTimer = null;
+document.getElementById('ytQuery').addEventListener('input', function() {
+  clearTimeout(ytTimer);
+  if (this.value.trim().length > 2) ytTimer = setTimeout(buscar, 500);
+});
+
+function showTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.tab-content').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+async function buscar() {
+  var q = document.getElementById('ytQuery').value.trim();
+  if (!q) return;
+  document.getElementById('searchSection').style.display = 'block';
+  document.getElementById('playerSection').classList.remove('visible');
+  var box = document.getElementById('resultsBox');
+  var st  = document.getElementById('statusBox');
+  st.className = 'status status-load';
+  st.textContent = '🔍 Buscando en YouTube: "' + q + '"...';
+  st.style.display = 'block';
+  box.innerHTML = '<div class="sk" style="height:64px;"></div><div class="sk" style="height:64px;margin-top:5px;"></div><div class="sk" style="height:64px;margin-top:5px;"></div>';
+  try {
+    var url = 'https://www.googleapis.com/youtube/v3/search'
+      + '?part=snippet&type=video&maxResults=6'
+      + '&q=' + encodeURIComponent(q)
+      + '&key=' + YT_KEY;
+    var res  = await fetch(url);
+    var data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    var items = data.items || [];
+    st.className = 'status status-ok';
+    st.textContent = '✓ ' + items.length + ' resultados en YouTube para "' + q + '"';
+    renderResults(items);
+  } catch(e) {
+    st.className = 'status status-err';
+    st.textContent = '✗ Error: ' + e.message;
+    box.innerHTML = '<div style="font-size:12px;color:#f87171;padding:14px;">' + e.message + '</div>';
+  }
+}
+
+var ytResultados = [];
+var ytIndexActual = 0;
+
+function renderResults(items) {
+  ytResultados = items;
+  var box = document.getElementById('resultsBox');
+  if (!items.length) { box.innerHTML = '<div style="color:#64748b;padding:14px;font-size:12px;">Sin resultados.</div>'; return; }
+  var html = '';
+  for (var i = 0; i < items.length; i++) {
+    var v = items[i];
+    var id    = v.id.videoId;
+    var title = (v.snippet.title || '').replace(/"/g,'&quot;');
+    var ch    = (v.snippet.channelTitle || '').replace(/"/g,'&quot;');
+    var thumb = v.snippet.thumbnails.medium ? v.snippet.thumbnails.medium.url : v.snippet.thumbnails.default.url;
+    html += '<div class="res-item" data-index="'+i+'" data-id="'+id+'" data-title="'+title+'" data-ch="'+ch+'">' +
+      '<img class="res-thumb" src="'+thumb+'" onerror="this.src=\'https://img.youtube.com/vi/'+id+'/default.jpg\'"/>' +
+      '<div style="flex:1;min-width:0;"><div class="res-title">'+v.snippet.title+'</div><div class="res-ch">'+v.snippet.channelTitle+'</div></div>' +
+      '<span class="res-arrow">&#9658;</span></div>';
+  }
+  box.innerHTML = html;
+  var divs = box.querySelectorAll('.res-item');
+  for (var j = 0; j < divs.length; j++) {
+    divs[j].addEventListener('click', function() {
+      ytIndexActual = parseInt(this.getAttribute('data-index'));
+      playVideo(this.getAttribute('data-id'), this.getAttribute('data-title'), this.getAttribute('data-ch'));
+    });
+  }
+}
+
+function playVideo(id, titulo, canal) {
+  document.getElementById('searchSection').style.display = 'none';
+  document.getElementById('playerSection').classList.add('visible');
+  document.getElementById('nowTitle').textContent = titulo;
+  document.getElementById('nowCh').textContent    = canal;
+  var slot = document.getElementById('playerWrap');
+  slot.innerHTML = '';
+  var iframe = document.createElement('iframe');
+  iframe.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;border:none;';
+  iframe.allowFullscreen = true;
+  iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+  iframe.src = 'https://www.youtube.com/embed/'+id+'?autoplay=1&controls=1&rel=0&modestbranding=1';
+  var errTimer = setTimeout(function(){ p6Siguiente(); }, 8000);
+  window.addEventListener('message', function onMsg(e) {
+    if (!e.data || typeof e.data !== 'object') return;
+    if (e.data.event === 'onStateChange' && e.data.info === 1) { clearTimeout(errTimer); window.removeEventListener('message', onMsg); }
+    if (e.data.event === 'onError') { clearTimeout(errTimer); window.removeEventListener('message', onMsg); p6Siguiente(); }
+  });
+  slot.appendChild(iframe);
+}
+
+function p6Siguiente() {
+  ytIndexActual++;
+  if (ytIndexActual < ytResultados.length) {
+    var v = ytResultados[ytIndexActual];
+    playVideo(v.id.videoId, v.snippet.title, v.snippet.channelTitle);
+  } else {
+    document.getElementById('playerWrap').innerHTML =
+      '<div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#0d001a;">' +
+      '<span style="font-size:32px;">&#128245;</span>' +
+      '<span style="font-size:13px;color:#a0aec0;text-align:center;">Todos los resultados tienen restricciones.<br>Intenta buscar con otras palabras.</span>' +
+      '<button onclick="volverBusqueda()" style="background:#a21caf;color:white;border:none;padding:8px 18px;border-radius:8px;font-size:13px;cursor:pointer;margin-top:4px;">Buscar de nuevo</button>' +
+      '</div>';
+  }
+}
+
+function volverBusqueda() {
+  document.getElementById('playerSection').classList.remove('visible');
+  document.getElementById('searchSection').style.display = 'block';
+  document.getElementById('playerWrap').innerHTML = '';
+  ytResultados = []; ytIndexActual = 0;
+}
+
+function loadSpot() {
+  var uri = document.getElementById('spotUri').value.trim();
+  document.getElementById('spotArea').innerHTML =
+    '<iframe src="https://open.spotify.com/embed/'+uri+'?utm_source=generator&theme=0" ' +
+    'width="100%" height="200" style="border-radius:10px;" frameborder="0" allowfullscreen ' +
+    'allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>';
+}
+function presetSpot(uri) { document.getElementById('spotUri').value = uri; loadSpot(); }
+</script>
+</body>
+</html>

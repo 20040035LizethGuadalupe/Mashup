@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Práctica 4 — Base de Datos en la Nube</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #1a0f00; color: #e2e8f0; min-height: 100vh; padding: 24px; }
+    h1 { font-size: 22px; font-weight: 600; color: #f59e0b; margin-bottom: 4px; }
+    .subtitle { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+    .badge { display: inline-block; background: #451a03; color: #f59e0b; font-size: 11px; padding: 3px 10px; border-radius: 20px; margin-bottom: 16px; font-weight: 500; }
+    .card { background: #231500; border: 1px solid #451a03; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    label { font-size: 12px; color: #a0aec0; display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+    input[type=text], input[type=email], select, textarea { background: #1a0f00; border: 1px solid #451a03; color: #e2e8f0; padding: 9px 14px; border-radius: 8px; font-size: 14px; width: 100%; margin-bottom: 12px; }
+    textarea { resize: vertical; min-height: 60px; }
+    .btn { background: #d97706; color: white; border: none; padding: 10px 22px; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 500; width: 100%; margin-top: 4px; }
+    .btn:hover { background: #b45309; }
+    .btn-danger { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 8px 12px; border-bottom: 1px solid #451a03; color: #f59e0b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { padding: 10px 12px; border-bottom: 1px solid #2d1900; color: #e2e8f0; }
+    tr:hover td { background: #2d1900; }
+    .status-ok { color: #34d399; font-size: 11px; background: #064e3b; padding: 2px 8px; border-radius: 10px; }
+    .status-error { color: #f87171; font-size: 11px; background: #7f1d1d; padding: 2px 8px; border-radius: 10px; }
+    .notification { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 10px; display: none; }
+    .notif-ok { background: #064e3b; color: #34d399; border: 1px solid #059669; }
+    .notif-err { background: #7f1d1d; color: #f87171; border: 1px solid #991b1b; }
+    pre { background: #1a0f00; border: 1px solid #451a03; border-radius: 8px; padding: 14px; font-size: 12px; color: #a0aec0; margin-top: 12px; overflow-x: auto; line-height: 1.6; }
+    .counter-row { display: flex; gap: 12px; margin-bottom: 16px; }
+    .counter-box { background: #1a0f00; border: 1px solid #451a03; border-radius: 8px; padding: 12px 16px; flex: 1; text-align: center; }
+    .counter-num { font-size: 24px; font-weight: 700; color: #f59e0b; }
+    .counter-label { font-size: 11px; color: #64748b; }
+    .api-indicator { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #a0aec0; margin-bottom: 12px; }
+    .dot-green { width: 7px; height: 7px; border-radius: 50%; background: #34d399; }
+    .dot-yellow { width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  </style>
+</head>
+<body>
+  <div class="badge">API #4 — Base de Datos</div>
+  <h1>Base de Datos en la Nube</h1>
+  <p class="subtitle">Envía y registra información usando JSONPlaceholder (REST API) — simula Firebase/backend en la nube</p>
+
+  <div class="counter-row">
+    <div class="counter-box"><div class="counter-num" id="totalReg">0</div><div class="counter-label">Registros guardados</div></div>
+    <div class="counter-box"><div class="counter-num" id="totalOk">0</div><div class="counter-label">Exitosos</div></div>
+    <div class="counter-box"><div class="counter-num" id="totalErr">0</div><div class="counter-label">Con error</div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="api-indicator"><span class="dot-green"></span> Conectado a JSONPlaceholder API</div>
+      <p style="font-size:13px;color:#a0aec0;margin-bottom:14px;">🔗 <code style="color:#f59e0b">POST https://jsonplaceholder.typicode.com/users</code></p>
+      <label>Nombre de usuario *</label>
+      <input type="text" id="regUsername" placeholder="ej. juan_perez" />
+      <label>Nombre completo *</label>
+      <input type="text" id="regName" placeholder="ej. Juan Pérez García" />
+      <label>Email *</label>
+      <input type="email" id="regEmail" placeholder="ej. juan@correo.com" />
+      <label>Ciudad</label>
+      <input type="text" id="regCity" placeholder="ej. Saltillo, Coahuila" />
+      <label>Notas</label>
+      <textarea id="regNotes" placeholder="Información adicional..."></textarea>
+      <button class="btn" onclick="guardarRegistro()">💾 Guardar en la nube</button>
+      <div class="notification notif-ok" id="notifOk">✓ Registro guardado correctamente en la base de datos.</div>
+      <div class="notification notif-err" id="notifErr">✗ Error al guardar. Intenta de nuevo.</div>
+    </div>
+
+    <div class="card">
+      <p style="font-size:13px;color:#a0aec0;margin-bottom:12px;font-weight:500;">🔗 GET — Consultar usuarios registrados</p>
+      <button class="btn" onclick="consultarRegistros()" style="background:#92400e;margin-bottom:12px;">🔍 Consultar base de datos</button>
+      <div id="consultaStatus" style="font-size:12px;color:#64748b;margin-bottom:10px;"></div>
+      <div class="table-wrap">
+        <table id="registrosTable">
+          <thead><tr>
+            <th>#</th><th>Username</th><th>Nombre</th><th>Email</th><th>Estado</th>
+          </tr></thead>
+          <tbody id="registrosBody">
+            <tr><td colspan="5" style="text-align:center;color:#64748b;padding:20px;">Presiona "Consultar base de datos"</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p style="font-size:13px;color:#a0aec0;margin-bottom:8px;font-weight:500;">Registro de operaciones (log)</p>
+    <div id="logArea" style="font-family:monospace;font-size:12px;color:#64748b;max-height:120px;overflow-y:auto;background:#1a0f00;padding:10px;border-radius:8px;border:1px solid #451a03;">
+      <span style="color:#f59e0b">[SISTEMA]</span> Base de datos lista. Esperando operaciones...<br>
+    </div>
+  </div>
+
+  <div class="card">
+    <p style="font-size:13px;color:#a0aec0;margin-bottom:8px;font-weight:500;">Código fuente — Lógica principal</p>
+    <pre>// POST — Guardar registro en la nube
+async function guardarRegistro() {
+  const datos = {
+    name:     document.getElementById('regName').value,
+    username: document.getElementById('regUsername').value,
+    email:    document.getElementById('regEmail').value,
+    address: { city: document.getElementById('regCity').value }
+  };
+
+  const response = await fetch(
+    'https://jsonplaceholder.typicode.com/users',
+    {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(datos)
+    }
+  );
+
+  if (response.ok) {
+    const resultado = await response.json();
+    console.log('Guardado con ID:', resultado.id);
+    mostrarNotificacion('ok');
+  }
+}
+
+// GET — Consultar registros existentes
+async function consultarRegistros() {
+  const response = await fetch(
+    'https://jsonplaceholder.typicode.com/users'
+  );
+  const usuarios = await response.json();
+  renderTabla(usuarios);
+}</pre>
+  </div>
+
+  <script>
+    var registrosLocales = [];
+    var contOk = 0, contErr = 0;
+
+    function log(msg, tipo) {
+      var area = document.getElementById('logArea');
+      var color = tipo === 'ok' ? '#34d399' : tipo === 'err' ? '#f87171' : '#f59e0b';
+      var now = new Date();
+      var time = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+      area.innerHTML += '<span style="color:' + color + '">[' + time + '] ' + msg + '</span><br>';
+      area.scrollTop = area.scrollHeight;
+    }
+
+    async function guardarRegistro() {
+      var username = document.getElementById('regUsername').value.trim();
+      var name = document.getElementById('regName').value.trim();
+      var email = document.getElementById('regEmail').value.trim();
+      if (!username || !name || !email) {
+        alert('Por favor completa los campos obligatorios (*)');
+        return;
+      }
+      var datos = { name: name, username: username, email: email, address: { city: document.getElementById('regCity').value } };
+      log('POST /users — guardando: ' + username, 'info');
+      document.getElementById('notifOk').style.display = 'none';
+      document.getElementById('notifErr').style.display = 'none';
+      try {
+        var res = await fetch('https://jsonplaceholder.typicode.com/users', {
+          method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(datos)
+        });
+        var resultado = await res.json();
+        registrosLocales.unshift({id: resultado.id || (Math.floor(Math.random()*9000)+1000), username: username, name: name, email: email, status: 'ok'});
+        contOk++;
+        document.getElementById('totalReg').textContent = registrosLocales.length;
+        document.getElementById('totalOk').textContent = contOk;
+        document.getElementById('notifOk').style.display = 'block';
+        log('✓ Registro guardado. ID asignado: ' + resultado.id, 'ok');
+        limpiarForm();
+        actualizarTablaLocal();
+      } catch(e) {
+        contErr++;
+        document.getElementById('totalErr').textContent = contErr;
+        document.getElementById('notifErr').style.display = 'block';
+        log('✗ Error: ' + e.message, 'err');
+      }
+    }
+
+    async function consultarRegistros() {
+      document.getElementById('consultaStatus').textContent = 'Consultando API...';
+      log('GET /users — consultando base de datos...', 'info');
+      try {
+        var res = await fetch('https://jsonplaceholder.typicode.com/users');
+        var usuarios = await res.json();
+        document.getElementById('consultaStatus').textContent = usuarios.length + ' registros encontrados en la API.';
+        var allRecords = registrosLocales.concat(usuarios.map(function(u){ return {id:u.id, username:u.username, name:u.name, email:u.email, status:'api'}; }));
+        renderTabla(allRecords.slice(0,15));
+        log('✓ Consulta exitosa — ' + usuarios.length + ' registros recibidos', 'ok');
+      } catch(e) {
+        document.getElementById('consultaStatus').textContent = 'Error de conexión.';
+        log('✗ Error en consulta: ' + e.message, 'err');
+      }
+    }
+
+    function renderTabla(lista) {
+      var html = '';
+      lista.forEach(function(u) {
+        var badge = u.status === 'ok' ? '<span class="status-ok">✓ guardado</span>' : '<span style="font-size:11px;color:#a0aec0;background:#231500;padding:2px 8px;border-radius:10px;">existente</span>';
+        html += '<tr><td>#' + u.id + '</td><td>' + u.username + '</td><td>' + u.name + '</td><td style="color:#f59e0b">' + u.email + '</td><td>' + badge + '</td></tr>';
+      });
+      document.getElementById('registrosBody').innerHTML = html;
+    }
+
+    function actualizarTablaLocal() {
+      renderTabla(registrosLocales);
+    }
+
+    function limpiarForm() {
+      document.getElementById('regUsername').value = '';
+      document.getElementById('regName').value = '';
+      document.getElementById('regEmail').value = '';
+      document.getElementById('regCity').value = '';
+      document.getElementById('regNotes').value = '';
+    }
+  </script>
+</body>
+</html>
