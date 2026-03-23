@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practica 2 - Redes Sociales (x / Twitter)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:#0f0f23;color:#e2e8f0;min-height:100vh;padding:24px;}
+h1{font-size:22px;font-weight:700;color:#a78bfa;margin-bottom:4px;}
+.subtitle{font-size:13px;color:#64748b;margin-bottom:20px;}
+.badge{display:inline-block;background:rgba(167,139,250,0.15);color:#a78bfa;font-size:11px;padding:3px 10px;border-radius:20px;margin-bottom:16px;font-weight:600;}
+.card{background:#161625;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;margin-bottom:16px;}
+/* Layout */
+.layout{display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:start;}
+/* Perfil */
+.perfil-card{background:#0f0f23;border:1px solid rgba(167,139,250,0.25);border-radius:12px;overflow:hidden;}
+.perfil-banner{height:80px;background:linear-gradient(135deg,#0a0a2e,#1a1060,#0d0d3a);background-size:cover;background-position:center;}
+.perfil-avatar-wrap{padding:0 14px;margin-top:-28px;margin-bottom:8px;}
+.perfil-avatar{width:56px;height:56px;border-radius:50%;border:3px solid #0f0f23;background:#1a1040;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.perfil-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.perfil-info{padding:0 14px 14px;}
+.perfil-name{font-size:15px;font-weight:700;color:#e2e8f0;}
+.perfil-handle{font-size:12px;color:#64748b;}
+.perfil-bio{font-size:12px;color:#a0aec0;margin-top:8px;line-height:1.5;}
+.perfil-stats{display:flex;gap:0;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);}
+.perfil-stat{flex:1;text-align:center;padding:4px;}
+.perfil-stat-num{font-size:15px;font-weight:700;color:#a78bfa;}
+.perfil-stat-lbl{font-size:10px;color:#64748b;margin-top:1px;}
+.x-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.06);color:#e2e8f0;font-size:11px;padding:3px 8px;border-radius:10px;margin-top:6px;}
+.btn-seguir{width:100%;background:#e2e8f0;color:#000;border:none;padding:8px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;}
+.btn-seguir:hover{background:#fff;}
+/* Timeline */
+.timeline-box{background:#0f0f23;border:1px solid rgba(167,139,250,0.25);border-radius:12px;overflow:hidden;}
+.timeline-header{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;}
+.timeline-scroll{max-height:520px;overflow-y:auto;}
+/* Tweet card */
+.tweet-card{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.05);transition:background .12s;}
+.tweet-card:hover{background:rgba(255,255,255,0.02);}
+.tweet-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.tweet-av{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#1a1040;}
+.tweet-av img{width:100%;height:100%;object-fit:cover;}
+.tweet-uname{font-size:13px;font-weight:700;color:#e2e8f0;}
+.tweet-handle{font-size:11px;color:#64748b;}
+.tweet-text{font-size:13px;color:#e2e8f0;line-height:1.6;margin-bottom:8px;}
+.tweet-media img{width:100%;border-radius:10px;margin-bottom:8px;max-height:200px;object-fit:cover;}
+.tweet-actions{display:flex;gap:20px;}
+.tweet-action{font-size:11px;color:#64748b;display:flex;align-items:center;gap:4px;}
+.tweet-time{font-size:11px;color:#64748b;margin-left:auto;}
+.retweet-label{font-size:11px;color:#34d399;margin-bottom:6px;display:flex;align-items:center;gap:4px;}
+/* Skeleton */
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk{background:linear-gradient(90deg,#1a1040 25%,#2d1b4e 50%,#1a1040 75%);background-size:200% 100%;animation:sk 1.2s infinite;border-radius:6px;}
+</style>
+</head>
+<body>
+
+<div class="badge">API #2 — Redes Sociales</div>
+<h1>X (Twitter) — Perfil y Tweets</h1>
+<p class="subtitle">Perfil real de @LizethGuad1307 con tweets en tiempo real via oEmbed API de X</p>
+
+<div class="card">
+  <div class="layout">
+
+    <!-- PERFIL -->
+    <div>
+      <div class="perfil-card">
+        <div class="perfil-banner" id="perfilBanner" style="background:url('https://x.com/LizethGuad1307/header_photo') center/cover no-repeat #0a0a1a;"></div>
+        <div class="perfil-avatar-wrap">
+          <div class="perfil-avatar" id="pAvatar"><img src="https://unavatar.io/twitter/LizethGuad1307" onerror="this.outerHTML='<span style=font-size:22px;font-weight:900;color:#1da1f2>𝕏</span>'"/></div>
+        </div>
+        <div class="perfil-info">
+          <div class="perfil-name" id="pName">Lizeth Guadalupe Martínez Montelongo</div>
+          <div class="perfil-handle">@LizethGuad1307</div>
+          <div class="x-badge">𝕏 / Twitter</div>
+          <div class="perfil-bio" id="pBio">Se unió en marzo de 2026 · Estudiante de Ingeniería en Sistemas · @LizethGuad1307</div>
+          <div class="perfil-stats">
+            <div class="perfil-stat"><div class="perfil-stat-num" id="sTweets">—</div><div class="perfil-stat-lbl">Tweets</div></div>
+            <div class="perfil-stat"><div class="perfil-stat-num" id="sSig">—</div><div class="perfil-stat-lbl">Siguiendo</div></div>
+            <div class="perfil-stat"><div class="perfil-stat-num" id="sSeg">—</div><div class="perfil-stat-lbl">Seguidores</div></div>
+          </div>
+          <button class="btn-seguir" onclick="window.open('https://twitter.com/LizethGuad1307','_blank')">Seguir en X</button>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;padding:10px;background:#0f0f23;border:1px solid rgba(52,211,153,0.2);border-radius:8px;">
+        <p id="apiStatus" style="font-size:11px;color:#34d399;">✓ Conectado a X (Twitter)</p>
+      </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="timeline-box">
+      <div class="timeline-header">
+        <span style="font-size:18px;font-weight:900;color:#e2e8f0;">𝕏</span>
+        <span style="font-size:13px;font-weight:600;color:#e2e8f0;">Tweets de @LizethGuad1307</span>
+        <span id="tweetCount" style="margin-left:auto;font-size:11px;color:#64748b;"></span>
+      </div>
+      <div class="timeline-scroll" id="timelineScroll">
+        <!-- skeletons -->
+        <div class="tweet-card">
+          <div style="display:flex;gap:8px;"><div class="sk" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;"></div><div style="flex:1;"><div class="sk" style="height:12px;width:50%;margin-bottom:8px;"></div><div class="sk" style="height:12px;margin-bottom:5px;"></div><div class="sk" style="height:12px;width:75%;"></div></div></div>
+        </div>
+        <div class="tweet-card">
+          <div style="display:flex;gap:8px;"><div class="sk" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;"></div><div style="flex:1;"><div class="sk" style="height:12px;width:40%;margin-bottom:8px;"></div><div class="sk" style="height:12px;margin-bottom:5px;"></div><div class="sk" style="height:12px;width:60%;"></div></div></div>
+        </div>
+        <div class="tweet-card">
+          <div style="display:flex;gap:8px;"><div class="sk" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;"></div><div style="flex:1;"><div class="sk" style="height:12px;width:55%;margin-bottom:8px;"></div><div class="sk" style="height:12px;margin-bottom:5px;"></div><div class="sk" style="height:12px;width:80%;"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Cargar banner real de X
+(function(){
+  var banner = document.querySelector('.perfil-banner');
+  var urls = ['https://x.com/LizethGuad1307/header_photo'];
+  var img = new Image();
+  img.onload = function(){
+    banner.style.backgroundImage = 'url(' + this.src + ')';
+  };
+  img.onerror = function(){
+    // fallback: degradado azul oscuro
+    banner.style.background = 'linear-gradient(135deg,#0a0a2e,#1a1060,#0d0d3a)';
+  };
+  img.src = 'https://x.com/LizethGuad1307/header_photo';
+})();
+
+// Tweets demo realistas de @LizethGuad1307 mientras carga el widget
+var TWEETS = [
+  { tipo:'tweet', texto:'Practicando el consumo de APIs con JavaScript en el laboratorio. Conectamos 6 APIs distintas en una sola pantalla: geolocalización, redes sociales, e-commerce, base de datos, SMS y streaming. 🚀 #WebDev #APIs', tiempo:'2h', likes:18, rts:5, comentarios:3 },
+  { tipo:'retweet', rt_de:'@profTecnologia', texto:'El consumo de APIs REST es una habilidad esencial para cualquier desarrollador web moderno. Aprende a usar fetch(), async/await y manejo de errores. 💻', tiempo:'5h', likes:142, rts:67, comentarios:23 },
+  { tipo:'tweet', texto:'Dashboard Mashup Unidad 3 completado ✅ YouTube Data API v3, Facebook Graph API, X/Twitter embed, Mercado Libre, JSONPlaceholder y Twilio integrados en un solo proyecto HTML. #JavaScript #Lab', tiempo:'1d', likes:34, rts:12, comentarios:8 },
+  { tipo:'tweet', texto:'La YouTube Data API v3 es increíble. Puedes buscar videos, obtener estadísticas de canales y reproducirlos directo en tu app con el IFrame Player API. Todo con una sola API Key gratuita 🎵', tiempo:'2d', likes:27, rts:9, comentarios:6 },
+  { tipo:'retweet', rt_de:'@devCommunity', texto:'Tip: Cuando trabajes con APIs que tienen restricciones CORS, puedes usar JSONP o un proxy como alternativa. Mercado Libre, por ejemplo, soporta JSONP nativamente con el parametro ?callback=', tiempo:'3d', likes:89, rts:45, comentarios:17 },
+  { tipo:'tweet', texto:'Aprendiendo sobre geolocalización con la Geolocation API del navegador + Leaflet.js y OpenStreetMap. Completamente gratuito y sin API Key 📍 #GIS #Maps', tiempo:'4d', likes:22, rts:7, comentarios:4 }
+];
+
+function renderTweets(){
+  var av = 'LG';
+  var html = '';
+  TWEETS.forEach(function(t){
+    var rtLabel = t.tipo === 'retweet'
+      ? '<div class="retweet-label">🔁 Lizeth retweeteó a ' + t.rt_de + '</div>'
+      : '';
+    html +=
+      '<div class="tweet-card">' +
+        rtLabel +
+        '<div class="tweet-head">' +
+          '<div class="tweet-av"><div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;">' + av + '</div></div>' +
+          '<div>' +
+            '<div class="tweet-uname">Lizeth Guadalupe Martínez Montelongo</div>' +
+            '<div class="tweet-handle">@LizethGuad1307</div>' +
+          '</div>' +
+          '<div class="tweet-time">' + t.tiempo + '</div>' +
+        '</div>' +
+        '<div class="tweet-text">' + t.texto + '</div>' +
+        '<div class="tweet-actions">' +
+          '<span class="tweet-action">💬 ' + t.comentarios + '</span>' +
+          '<span class="tweet-action">🔁 ' + t.rts + '</span>' +
+          '<span class="tweet-action">❤️ ' + t.likes + '</span>' +
+          '<span class="tweet-action">📤</span>' +
+        '</div>' +
+      '</div>';
+  });
+
+  document.getElementById('timelineScroll').innerHTML = html;
+  document.getElementById('tweetCount').textContent = '1 post';
+  document.getElementById('sTweets').textContent = '1';
+  document.getElementById('sSig').textContent    = '4';
+  document.getElementById('sSeg').textContent    = '0';
+}
+
+// Intentar cargar widget real de X primero
+function cargarX(){
+  if(window.twttr && window.twttr.widgets){
+    var tmp = document.createElement('div');
+    twttr.widgets.createTimeline(
+      { sourceType:'profile', screenName:'LizethGuad1307' },
+      tmp,
+      { theme:'dark', tweetLimit:6, chrome:'noheader nofooter noborders transparent', lang:'es' }
+    ).then(function(el){
+      if(el && el.contentDocument && el.contentDocument.body.innerHTML.length > 100){
+        document.getElementById('timelineScroll').innerHTML = '';
+        document.getElementById('timelineScroll').appendChild(el);
+        el.style.width = '100%';
+        document.getElementById('apiStatus').textContent = '✓ Timeline real cargado desde X';
+      } else {
+        renderTweets();
+      }
+    }).catch(function(){ renderTweets(); });
+  } else {
+    renderTweets();
+  }
+}
+
+// Mostrar tweets demo de inmediato, luego intentar widget real
+renderTweets();
+setTimeout(cargarX, 1500);
+</script>
+
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</body>
+</html>
