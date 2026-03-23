@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practica 3 - Mercado Libre</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0d1220;
+  color: #e8edf5;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── BARRA BÚSQUEDA ── */
+.ml-bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 10px;
+  background: rgba(0,0,0,.35);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  flex-shrink: 0;
+}
+.ml-bar input {
+  flex: 1;
+  background: #fff; color: #333;
+  border: none; border-radius: 5px 0 0 5px;
+  padding: 6px 11px; font-size: 12px;
+}
+.ml-bar input:focus { outline: 2px solid #3483fa; }
+.ml-bar-btn {
+  background: #3483fa; color: #fff;
+  border: none; border-radius: 0 5px 5px 0;
+  padding: 6px 12px; font-size: 13px; font-weight: 600;
+  cursor: pointer; flex-shrink: 0;
+}
+.ml-bar-btn:hover { background: #2968c8; }
+
+/* ── CHIPS ── */
+.ml-pills {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  flex-shrink: 0;
+}
+.ml-pill {
+  background: rgba(52,211,153,.1); color: #34d399;
+  border: 1px solid rgba(52,211,153,.2);
+  padding: 3px 8px; border-radius: 20px;
+  font-size: 10px; cursor: pointer; font-weight: 500;
+  transition: all .15s; user-select: none;
+}
+.ml-pill:hover, .ml-pill.active {
+  background: rgba(52,211,153,.22); border-color: #34d399;
+}
+
+/* ── PANEL DETALLE (API) ── */
+.ml-detail {
+  display: none;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  flex-shrink: 0;
+  animation: fdIn .2s ease;
+}
+@keyframes fdIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+
+.ml-detail-inner { display: flex; }
+
+.ml-det-img {
+  width: 130px; flex-shrink: 0;
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  padding: 10px;
+}
+.ml-det-img img { max-width: 110px; max-height: 100px; object-fit: contain; }
+
+.ml-det-info {
+  flex: 1; padding: 10px 14px;
+  border-left: 1px solid rgba(255,255,255,.07);
+  display: flex; flex-direction: column; gap: 5px; justify-content: center;
+}
+.ml-det-src { font-size: 9px; color: rgba(232,237,245,.45); }
+.ml-det-title {
+  font-size: 11px; font-weight: 600; color: #e8edf5; line-height: 1.4;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.ml-det-price { font-size: 20px; font-weight: 700; color: #e8edf5; letter-spacing: -.3px; }
+.ml-det-price .curr { font-size: 11px; font-weight: 400; color: rgba(232,237,245,.45); margin-right: 2px; }
+.ml-det-badges { display: flex; gap: 5px; }
+.ml-badge-free {
+  background: rgba(52,211,153,.12); color: #34d399;
+  border: 1px solid rgba(52,211,153,.25);
+  font-size: 8px; font-weight: 600; padding: 1px 7px; border-radius: 999px;
+}
+.ml-badge-cond {
+  background: rgba(0,0,0,.3); color: rgba(232,237,245,.45);
+  border: 1px solid rgba(255,255,255,.07);
+  font-size: 8px; padding: 1px 7px; border-radius: 999px;
+}
+.ml-det-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: #3483fa; color: #fff;
+  border: none; border-radius: 6px; padding: 5px 12px;
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  text-decoration: none; width: fit-content;
+}
+.ml-det-btn:hover { background: #2968c8; }
+.ml-det-footer {
+  font-size: 9px; color: rgba(232,237,245,.35);
+  padding: 4px 14px 6px;
+  border-top: 1px solid rgba(255,255,255,.05);
+}
+
+/* ── IFRAME REAL DE ML ── */
+.ml-iframe-box {
+  flex: 1; min-height: 0; position: relative; background: #fff;
+}
+.ml-iframe-box iframe {
+  width: 100%; height: 100%; border: none; display: block;
+}
+.ml-placeholder {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px; height: 100%;
+  color: rgba(232,237,245,.4); text-align: center; padding: 20px;
+  background: #0d1220; font-size: 11px;
+}
+.ml-placeholder span { font-size: 32px; }
+</style>
+</head>
+<body>
+
+<!-- BARRA BÚSQUEDA -->
+<div class="ml-bar">
+  <input type="text" id="mlQuery" placeholder="Buscar en Mercado Libre..." onkeydown="if(event.key==='Enter')mlBuscar()"/>
+  <button class="ml-bar-btn" onclick="mlBuscar()">🔍</button>
+</div>
+
+<!-- CHIPS -->
+<div class="ml-pills">
+  <span class="ml-pill active" onclick="mlQuick('laptop',this)">💻 Laptop</span>
+  <span class="ml-pill" onclick="mlQuick('iPhone',this)">📱 iPhone</span>
+  <span class="ml-pill" onclick="mlQuick('PS5',this)">🎮 PS5</span>
+  <span class="ml-pill" onclick="mlQuick('tenis Nike',this)">👟 Tenis</span>
+  <span class="ml-pill" onclick="mlQuick('auriculares',this)">🎧 Audio</span>
+</div>
+
+<!-- DETALLE (primer resultado API) -->
+<div class="ml-detail" id="mlDetail">
+  <div class="ml-detail-inner">
+    <div class="ml-det-img"><img id="mlDetImg" src="" alt=""/></div>
+    <div class="ml-det-info">
+      <div class="ml-det-src">mercado·libre</div>
+      <div class="ml-det-title" id="mlDetTitle"></div>
+      <div class="ml-det-badges" id="mlDetBadges"></div>
+      <div class="ml-det-price"><span class="curr" id="mlDetCurr"></span><span id="mlDetPrice"></span></div>
+      <a class="ml-det-btn" id="mlDetLink" href="#" target="_blank" rel="noopener">Ver en Mercado Libre ↗</a>
+    </div>
+  </div>
+  <div class="ml-det-footer">Vista de la página de resultados</div>
+</div>
+
+<!-- IFRAME REAL DE MERCADO LIBRE -->
+<div class="ml-iframe-box">
+  <div class="ml-placeholder" id="mlPlaceholder">
+    <span>🛒</span>
+    <p>Selecciona una categoría o busca algo</p>
+  </div>
+  <iframe id="mlFrame" style="display:none;"
+    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation">
+  </iframe>
+</div>
+
+<script>
+function mlFmt(n){ return new Intl.NumberFormat('es-MX').format(Math.round(n)); }
+
+function mlQuick(q, btn){
+  document.getElementById('mlQuery').value = q;
+  document.querySelectorAll('.ml-pill').forEach(function(c){ c.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  mlBuscar();
+}
+
+function mlBuscar(){
+  var q = document.getElementById('mlQuery').value.trim();
+  if(!q) return;
+
+  // 1. Detalle: primer resultado via API
+  document.getElementById('mlDetail').style.display = 'none';
+  fetch('https://api.mercadolibre.com/sites/MLM/search?q=' + encodeURIComponent(q) + '&limit=1')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var items = data.results || [];
+      if(!items.length) return;
+      var p = items[0];
+      var thumb = (p.thumbnail||'').replace('http://','https://').replace('-I.jpg','-O.jpg');
+      document.getElementById('mlDetImg').src = thumb;
+      document.getElementById('mlDetTitle').textContent = p.title || '';
+      document.getElementById('mlDetCurr').textContent = (p.currency_id||'') + ' ';
+      document.getElementById('mlDetPrice').textContent = mlFmt(p.price||0);
+      var badges = '';
+      if(p.shipping && p.shipping.free_shipping) badges += '<span class="ml-badge-free">Envío gratis</span>';
+      badges += '<span class="ml-badge-cond">' + (p.condition==='new'?'Nuevo':'Usado') + '</span>';
+      document.getElementById('mlDetBadges').innerHTML = badges;
+      document.getElementById('mlDetLink').href = p.permalink || '#';
+      document.getElementById('mlDetail').style.display = 'block';
+    }).catch(function(){});
+
+  // 2. iframe real de Mercado Libre
+  var slug = q.trim().replace(/\s+/g, '-');
+  var url = 'https://listado.mercadolibre.com.mx/' + encodeURIComponent(slug);
+  var frame = document.getElementById('mlFrame');
+  frame.src = url;
+  frame.style.display = 'block';
+  document.getElementById('mlPlaceholder').style.display = 'none';
+}
+
+// Carga inicial
+mlBuscar();
+</script>
+</body>
+</html>

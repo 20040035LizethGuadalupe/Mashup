@@ -3,522 +3,677 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>YouTube</title>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<title>Practica 6 - Streaming</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Roboto','Arial',sans-serif;background:#0f0f0f;color:#fff;min-height:100vh;}
-.yt-header{background:#0f0f0f;padding:0 16px;height:56px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:200;border-bottom:1px solid #272727;}
-.yt-logo{display:flex;align-items:center;gap:6px;cursor:pointer;}
-.yt-logo-icon{background:#ff0000;border-radius:6px;width:34px;height:24px;display:flex;align-items:center;justify-content:center;}
-.yt-logo-icon::after{content:'';border-left:12px solid #fff;border-top:7px solid transparent;border-bottom:7px solid transparent;margin-left:2px;}
-.yt-logo-text{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.5px;}
-.yt-search-wrap{flex:1;max-width:560px;display:flex;}
-.yt-search-wrap input{flex:1;background:#121212;border:1px solid #303030;border-right:none;color:#fff;padding:8px 16px;border-radius:40px 0 0 40px;font-size:16px;outline:none;}
-.yt-search-wrap input:focus{border-color:#1c62b9;background:#000;}
-.yt-search-btn{background:#272727;border:1px solid #303030;border-left:none;color:#fff;padding:0 20px;border-radius:0 40px 40px 0;cursor:pointer;font-size:16px;}
-.yt-search-btn:hover{background:#3d3d3d;}
-.yt-header-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
-.yt-icon-btn{background:transparent;border:none;color:#fff;cursor:pointer;padding:8px;border-radius:50%;font-size:20px;}
-.yt-icon-btn:hover{background:#272727;}
-.yt-login-btn{background:#263850;color:#3ea6ff;border:1px solid #3ea6ff;padding:7px 14px;border-radius:20px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:500;}
-.yt-login-btn:hover{background:#3ea6ff22;}
-.yt-avatar-btn{width:34px;height:34px;border-radius:50%;overflow:hidden;cursor:pointer;border:2px solid #444;display:none;}
-.yt-avatar-btn img{width:100%;height:100%;object-fit:cover;}
-.yt-user-menu{position:relative;}
-.yt-dropdown{display:none;position:absolute;top:44px;right:0;background:#282828;border-radius:10px;min-width:230px;box-shadow:0 8px 24px rgba(0,0,0,.6);z-index:400;overflow:hidden;}
-.yt-dropdown.open{display:block;}
-.yt-drop-header{padding:14px;border-bottom:1px solid #3d3d3d;display:flex;align-items:center;gap:10px;}
-.yt-drop-header img{width:40px;height:40px;border-radius:50%;}
-.yt-drop-name{font-size:14px;font-weight:600;}
-.yt-drop-email{font-size:12px;color:#aaa;}
-.yt-drop-item{padding:11px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;}
-.yt-drop-item:hover{background:#3d3d3d;}
-.yt-drop-logout{padding:11px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;border-top:1px solid #3d3d3d;color:#f87171;}
-.yt-drop-logout:hover{background:#3d3d3d;}
+body{font-family:'Circular','Helvetica Neue',Helvetica,Arial,sans-serif;background:#121212;color:#fff;min-height:100vh;display:flex;flex-direction:column;}
 
-.yt-body{display:flex;height:calc(100vh - 57px);}
-.yt-sidebar{width:72px;flex-shrink:0;background:#0f0f0f;padding:10px 0;border-right:1px solid #272727;display:flex;flex-direction:column;align-items:center;gap:2px;}
-.yt-sb{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;border-radius:10px;cursor:pointer;width:66px;transition:background .15s;}
-.yt-sb:hover,.yt-sb.active{background:#272727;}
-.yt-sb span:first-child{font-size:20px;}
-.yt-sb span:last-child{font-size:10px;color:#aaa;}
+/* ── HEADER ── */
+.sp-header{background:#000;padding:0 16px;height:56px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:200;border-bottom:1px solid #282828;}
+.sp-logo{display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;}
+.sp-logo svg{width:28px;height:28px;}
+.sp-logo-text{font-size:20px;font-weight:900;color:#fff;letter-spacing:-.5px;}
+.sp-search-wrap{flex:1;max-width:360px;position:relative;}
+.sp-search-wrap input{width:100%;background:#242424;border:none;color:#fff;padding:8px 14px 8px 36px;border-radius:500px;font-size:13px;outline:none;}
+.sp-search-wrap input:focus{background:#2a2a2a;outline:2px solid #fff;}
+.sp-search-wrap input::placeholder{color:#a7a7a7;}
+.sp-search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#a7a7a7;font-size:14px;pointer-events:none;}
+.sp-header-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.sp-login-btn{background:#1db954;color:#000;border:none;padding:8px 18px;border-radius:500px;font-size:13px;font-weight:700;cursor:pointer;transition:transform .1s,background .15s;}
+.sp-login-btn:hover{background:#1ed760;transform:scale(1.04);}
+.sp-avatar-wrap{display:none;align-items:center;gap:8px;cursor:pointer;position:relative;}
+.sp-avatar{width:32px;height:32px;border-radius:50%;overflow:hidden;background:#535353;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+.sp-avatar img{width:100%;height:100%;object-fit:cover;}
+.sp-user-name{font-size:13px;font-weight:600;color:#fff;}
+.sp-dropdown{display:none;position:absolute;top:42px;right:0;background:#282828;border-radius:6px;min-width:200px;box-shadow:0 16px 24px rgba(0,0,0,.3);z-index:400;padding:4px 0;}
+.sp-dropdown.open{display:block;}
+.sp-drop-item{padding:10px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;color:#fff;}
+.sp-drop-item:hover{background:#3e3e3e;}
+.sp-drop-sep{border-top:1px solid #3e3e3e;margin:4px 0;}
+.sp-drop-logout{padding:10px 14px;font-size:13px;cursor:pointer;color:#f87171;display:flex;align-items:center;gap:10px;}
+.sp-drop-logout:hover{background:#3e3e3e;}
 
-.yt-main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-.yt-tabs{display:flex;gap:8px;padding:10px 14px;overflow-x:auto;border-bottom:1px solid #272727;flex-shrink:0;}
-.yt-tabs::-webkit-scrollbar{display:none;}
-.yt-tab{background:#272727;border:none;color:#fff;padding:6px 13px;border-radius:20px;font-size:13px;cursor:pointer;white-space:nowrap;transition:background .15s;}
-.yt-tab:hover{background:#3d3d3d;}
-.yt-tab.active{background:#fff;color:#000;font-weight:600;}
-.yt-content{flex:1;overflow-y:auto;padding:14px;}
+/* ── LAYOUT ── */
+.sp-body{display:flex;flex:1;min-height:0;height:calc(100vh - 56px - 80px);}
 
-/* SECTIONS */
-.sec{display:none;}.sec.active{display:block;}
+/* ── SIDEBAR ── */
+.sp-sidebar{width:240px;flex-shrink:0;background:#000;padding:8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+.sp-sidebar::-webkit-scrollbar{width:0;}
+.sp-nav-item{display:flex;align-items:center;gap:14px;padding:10px 12px;border-radius:6px;cursor:pointer;color:#b3b3b3;font-size:13px;font-weight:600;transition:color .15s,background .15s;}
+.sp-nav-item:hover{color:#fff;background:#1a1a1a;}
+.sp-nav-item.active{color:#fff;}
+.sp-nav-item span:first-child{font-size:20px;width:24px;text-align:center;}
+.sp-lib-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 6px;}
+.sp-lib-title{font-size:13px;font-weight:700;color:#b3b3b3;}
+.sp-playlist-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;cursor:pointer;transition:background .15s;}
+.sp-playlist-item:hover{background:#1a1a1a;}
+.sp-playlist-img{width:42px;height:42px;border-radius:4px;background:#333;flex-shrink:0;overflow:hidden;}
+.sp-playlist-img img{width:100%;height:100%;object-fit:cover;}
+.sp-playlist-name{font-size:13px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sp-playlist-type{font-size:11px;color:#a7a7a7;}
 
-/* PLAYER */
-.yt-player-wrap{position:relative;width:100%;padding-bottom:56.25%;background:#000;border-radius:8px;overflow:hidden;margin-bottom:12px;}
-.yt-player-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
-.yt-vtitle{font-size:16px;font-weight:600;margin-bottom:8px;line-height:1.3;}
-.yt-vmeta{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;}
-.yt-vviews{font-size:13px;color:#aaa;}
-.yt-vactions{display:flex;gap:5px;}
-.yt-vbtn{background:#272727;border:none;color:#fff;padding:6px 13px;border-radius:20px;font-size:12px;cursor:pointer;}
-.yt-vbtn:hover{background:#3d3d3d;}
-.yt-chrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #272727;border-bottom:1px solid #272727;margin-bottom:12px;}
-.yt-chav{width:36px;height:36px;border-radius:50%;background:#ff0000;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;overflow:hidden;}
-.yt-chav img{width:100%;height:100%;object-fit:cover;}
-.yt-chname{font-size:14px;font-weight:600;}
-.yt-chsubs{font-size:12px;color:#aaa;}
-.yt-subchbtn{background:#fff;color:#000;border:none;padding:7px 15px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;margin-left:auto;}
-.yt-backbtn{background:#272727;border:none;color:#fff;padding:6px 13px;border-radius:20px;font-size:12px;cursor:pointer;margin-bottom:12px;display:inline-flex;align-items:center;gap:5px;}
-.yt-backbtn:hover{background:#3d3d3d;}
+/* ── MAIN ── */
+.sp-main{flex:1;overflow-y:auto;background:linear-gradient(180deg,#1e3a2e 0%,#121212 300px);}
+.sp-main::-webkit-scrollbar{width:6px;}
+.sp-main::-webkit-scrollbar-thumb{background:#535353;border-radius:3px;}
+.sp-content{padding:20px 24px 32px;}
 
-/* GRID */
-.yt-status{font-size:12px;padding:5px 9px;border-radius:6px;margin-bottom:10px;display:none;}
-.yt-status.loading{display:block;background:rgba(255,255,255,.05);color:#aaa;}
-.yt-status.ok{display:block;background:rgba(34,197,94,.1);color:#4ade80;}
-.yt-status.err{display:block;background:rgba(239,68,68,.1);color:#f87171;}
-.yt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:13px;}
-.ytc{cursor:pointer;transition:transform .15s;}
-.ytc:hover{transform:translateY(-2px);}
-.ytc-thumb{position:relative;width:100%;padding-bottom:56.25%;border-radius:9px;overflow:hidden;background:#272727;margin-bottom:7px;}
-.ytc-thumb img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;}
-.ytc-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background .15s;display:flex;align-items:center;justify-content:center;}
-.ytc:hover .ytc-overlay{background:rgba(0,0,0,.3);}
-.ytc-play{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;font-size:16px;padding-left:3px;}
-.ytc:hover .ytc-play{opacity:1;}
-.ytc-dur{position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,.85);font-size:11px;font-weight:600;padding:2px 5px;border-radius:3px;}
-.ytc-info{display:flex;gap:8px;}
-.ytc-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;background:#ff0000;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-top:2px;overflow:hidden;}
-.ytc-av img{width:100%;height:100%;object-fit:cover;}
-.ytc-meta{flex:1;min-width:0;}
-.ytc-title{font-size:13px;font-weight:600;line-height:1.3;margin-bottom:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.ytc-ch{font-size:11px;color:#aaa;}
-.ytc-views{font-size:11px;color:#aaa;}
-
-/* ACCOUNT */
-.yt-acc-banner{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:12px;padding:20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;}
-.yt-acc-photo{width:72px;height:72px;border-radius:50%;overflow:hidden;border:3px solid #ff0000;flex-shrink:0;}
-.yt-acc-photo img{width:100%;height:100%;object-fit:cover;}
-.yt-acc-name{font-size:20px;font-weight:700;}
-.yt-acc-email{font-size:13px;color:#aaa;margin-top:3px;}
-.yt-sec-title{font-size:16px;font-weight:600;margin-bottom:12px;}
-
-/* SUBS */
-.yt-sub-list{display:flex;flex-direction:column;gap:8px;}
-.yt-sub-row{display:flex;align-items:center;gap:12px;padding:10px;background:#1a1a1a;border-radius:10px;cursor:pointer;transition:background .15s;}
-.yt-sub-row:hover{background:#272727;}
-.yt-sub-photo{width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#333;}
-.yt-sub-photo img{width:100%;height:100%;object-fit:cover;}
-.yt-sub-name-text{font-size:14px;font-weight:500;}
-.yt-sub-subs{font-size:12px;color:#aaa;}
+/* ── SECCIONES ── */
+.sp-sec{display:none;}.sp-sec.active{display:block;}
 
 /* LOGIN SCREEN */
-.yt-login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;gap:18px;text-align:center;}
-.yt-login-screen h2{font-size:20px;font-weight:600;}
-.yt-login-screen p{font-size:14px;color:#aaa;max-width:340px;line-height:1.6;}
-.yt-gbtn{background:#fff;color:#333;border:none;padding:11px 22px;border-radius:22px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px;}
-.yt-gbtn:hover{background:#f0f0f0;}
-.yt-gbtn svg{width:18px;height:18px;}
-.yt-skip{background:transparent;border:1px solid #444;color:#aaa;padding:9px 20px;border-radius:22px;font-size:13px;cursor:pointer;}
-.yt-skip:hover{border-color:#aaa;color:#fff;}
+.sp-login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:20px;text-align:center;min-height:400px;}
+.sp-login-screen h2{font-size:28px;font-weight:900;}
+.sp-login-screen p{font-size:15px;color:#a7a7a7;max-width:320px;line-height:1.6;}
+.sp-login-big{background:#1db954;color:#000;border:none;padding:14px 32px;border-radius:500px;font-size:15px;font-weight:700;cursor:pointer;transition:transform .1s,background .15s;}
+.sp-login-big:hover{background:#1ed760;transform:scale(1.04);}
 
-@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
-.sk{background:linear-gradient(90deg,#272727 25%,#333 50%,#272727 75%);background-size:200% 100%;animation:sk 1.3s infinite;border-radius:6px;}
-.yt-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;gap:10px;color:#aaa;}
+/* PERFIL */
+.sp-profile-banner{background:linear-gradient(135deg,#1db954,#0d7a35);border-radius:12px;padding:28px;margin-bottom:24px;display:flex;align-items:center;gap:20px;}
+.sp-profile-photo{width:100px;height:100px;border-radius:50%;overflow:hidden;border:4px solid rgba(0,0,0,.3);flex-shrink:0;background:#333;}
+.sp-profile-photo img{width:100%;height:100%;object-fit:cover;}
+.sp-profile-name{font-size:32px;font-weight:900;line-height:1.1;}
+.sp-profile-email{font-size:13px;color:rgba(255,255,255,.7);margin-top:4px;}
+.sp-profile-stats{display:flex;gap:20px;margin-top:12px;}
+.sp-pstat{text-align:center;}
+.sp-pstat-n{font-size:20px;font-weight:700;color:#1db954;}
+.sp-pstat-l{font-size:11px;color:rgba(255,255,255,.6);}
+.sp-profile-badge{background:#1db954;color:#000;font-size:11px;font-weight:700;padding:3px 10px;border-radius:500px;display:inline-block;margin-top:8px;}
+
+/* SECCIÓN TÍTULO */
+.sp-sec-title{font-size:22px;font-weight:900;margin-bottom:16px;}
+.sp-sec-sub{font-size:13px;color:#a7a7a7;margin-bottom:16px;}
+
+/* GRID ÁLBUMES */
+.sp-album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:28px;}
+.sp-album-card{background:#181818;border-radius:8px;padding:14px;cursor:pointer;transition:background .15s;}
+.sp-album-card:hover{background:#282828;}
+.sp-album-img{width:100%;aspect-ratio:1;border-radius:6px;background:#333;margin-bottom:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.5);}
+.sp-album-img img{width:100%;height:100%;object-fit:cover;}
+.sp-album-name{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;}
+.sp-album-artist{font-size:12px;color:#a7a7a7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* LISTA CANCIONES */
+.sp-track-list{display:flex;flex-direction:column;gap:2px;}
+.sp-track{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:6px;cursor:pointer;transition:background .15s;}
+.sp-track:hover{background:#282828;}
+.sp-track.playing{background:#1a2e1a;}
+.sp-track-num{width:20px;text-align:center;font-size:13px;color:#a7a7a7;flex-shrink:0;}
+.sp-track.playing .sp-track-num{color:#1db954;}
+.sp-track-img{width:40px;height:40px;border-radius:4px;background:#333;flex-shrink:0;overflow:hidden;}
+.sp-track-img img{width:100%;height:100%;object-fit:cover;}
+.sp-track-info{flex:1;min-width:0;}
+.sp-track-name{font-size:14px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sp-track.playing .sp-track-name{color:#1db954;}
+.sp-track-artist{font-size:12px;color:#a7a7a7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sp-track-duration{font-size:12px;color:#a7a7a7;flex-shrink:0;}
+.sp-play-btn{width:28px;height:28px;border-radius:50%;background:#1db954;border:none;color:#000;font-size:11px;cursor:pointer;display:none;align-items:center;justify-content:center;flex-shrink:0;}
+.sp-track:hover .sp-play-btn{display:flex;}
+.sp-track:hover .sp-track-num{display:none;}
+
+/* BÚSQUEDA */
+.sp-search-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.sp-schip{background:#282828;color:#fff;border:none;padding:8px 16px;border-radius:500px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.sp-schip:hover,.sp-schip.active{background:#1db954;color:#000;}
+
+/* NOW PLAYING BAR */
+.sp-nowbar{position:fixed;bottom:0;left:0;right:0;height:80px;background:#181818;border-top:1px solid #282828;display:flex;align-items:center;padding:0 16px;gap:16px;z-index:300;}
+.sp-now-left{display:flex;align-items:center;gap:12px;width:240px;min-width:0;}
+.sp-now-img{width:52px;height:52px;border-radius:4px;background:#333;flex-shrink:0;overflow:hidden;}
+.sp-now-img img{width:100%;height:100%;object-fit:cover;}
+.sp-now-info{min-width:0;}
+.sp-now-title{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sp-now-artist{font-size:11px;color:#a7a7a7;}
+.sp-now-heart{font-size:16px;cursor:pointer;color:#a7a7a7;flex-shrink:0;}
+.sp-now-heart:hover{color:#1db954;}
+.sp-now-center{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.sp-now-controls{display:flex;align-items:center;gap:16px;}
+.sp-ctrl-btn{background:transparent;border:none;color:#a7a7a7;font-size:18px;cursor:pointer;padding:4px;}
+.sp-ctrl-btn:hover{color:#fff;}
+.sp-play-pause{width:34px;height:34px;border-radius:50%;background:#fff;border:none;color:#000;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s;}
+.sp-play-pause:hover{transform:scale(1.06);}
+.sp-progress{display:flex;align-items:center;gap:8px;width:100%;max-width:400px;}
+.sp-time{font-size:11px;color:#a7a7a7;flex-shrink:0;font-variant-numeric:tabular-nums;}
+.sp-bar-wrap{flex:1;height:4px;background:#535353;border-radius:2px;cursor:pointer;position:relative;}
+.sp-bar-fill{height:100%;background:#1db954;border-radius:2px;transition:width .5s linear;}
+.sp-now-right{width:180px;display:flex;align-items:center;justify-content:flex-end;gap:10px;}
+.sp-vol-icon{font-size:16px;color:#a7a7a7;}
+.sp-vol-bar{width:80px;height:4px;background:#535353;border-radius:2px;cursor:pointer;}
+.sp-vol-fill{height:100%;background:#fff;border-radius:2px;width:70%;}
+.sp-embed-wrap{width:100%;margin-top:12px;border-radius:12px;overflow:hidden;}
+
+/* QUICK SEARCH RESULTS */
+.sp-qresults{display:flex;flex-direction:column;gap:6px;}
+.sp-qitem{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:8px;cursor:pointer;background:#181818;transition:background .15s;}
+.sp-qitem:hover{background:#282828;}
+.sp-qitem img{width:44px;height:44px;border-radius:4px;object-fit:cover;flex-shrink:0;background:#333;}
+.sp-qitem-info{flex:1;min-width:0;}
+.sp-qitem-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sp-qitem-sub{font-size:11px;color:#a7a7a7;}
+.sp-qitem-play{width:32px;height:32px;border-radius:50%;background:#1db954;border:none;color:#000;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+@keyframes sp-pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.sp-skel{background:#282828;border-radius:6px;animation:sp-pulse 1.4s ease-in-out infinite;}
 </style>
 </head>
 <body>
 
-<div class="yt-header">
-  <div class="yt-logo" onclick="showSec('home')">
-    <div class="yt-logo-icon"></div>
-    <span class="yt-logo-text" style="margin-left:6px;">YouTube</span>
+<!-- HEADER -->
+<div class="sp-header">
+  <a class="sp-logo" href="#">
+    <svg viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+    <span class="sp-logo-text">Spotify</span>
+  </a>
+  <div class="sp-search-wrap">
+    <span class="sp-search-icon">🔍</span>
+    <input type="text" id="spQ" placeholder="¿Qué quieres escuchar?" onkeydown="if(event.key==='Enter')spSearch()"/>
   </div>
-  <div class="yt-search-wrap">
-    <input type="text" id="ytQ" placeholder="Buscar" onkeydown="if(event.key==='Enter')ytBuscar()"/>
-    <button class="yt-search-btn" onclick="ytBuscar()">🔍</button>
-  </div>
-  <div class="yt-header-right">
-    <button class="yt-icon-btn">🔔</button>
-    <div class="yt-user-menu">
-      <!-- Sin sesión -->
-      <button class="yt-login-btn" id="ytLoginBtn" onclick="iniciarSesion()">
-        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        Inicia sesión
-      </button>
-      <!-- Con sesión -->
-      <div class="yt-avatar-btn" id="ytAvatarBtn" onclick="toggleDropdown()">
-        <img id="ytAvatarImg" src="" alt=""/>
-      </div>
-      <div class="yt-dropdown" id="ytDropdown">
-        <div class="yt-drop-header">
-          <img id="ytDropImg" src="" alt=""/>
-          <div><div class="yt-drop-name" id="ytDropName"></div><div class="yt-drop-email" id="ytDropEmail"></div></div>
-        </div>
-        <div class="yt-drop-item" onclick="showSec('account')">👤 Tu canal</div>
-        <div class="yt-drop-item" onclick="showSec('history')">🕐 Historial</div>
-        <div class="yt-drop-item" onclick="showSec('subs')">📺 Suscripciones</div>
-        <div class="yt-drop-item" onclick="showSec('liked')">👍 Videos que te gustaron</div>
-        <div class="yt-drop-logout" onclick="cerrarSesion()">🚪 Cerrar sesión</div>
+  <div class="sp-header-right">
+    <button class="sp-login-btn" id="spLoginBtn" onclick="spLogin()">Iniciar sesión</button>
+    <div class="sp-avatar-wrap" id="spAvatarWrap" onclick="toggleSpDropdown()">
+      <div class="sp-avatar" id="spAvatar"><img id="spAvatarImg" src="" alt="" onerror="this.style.display='none'"/><span id="spAvatarInitial"></span></div>
+      <span class="sp-user-name" id="spUserName"></span>
+      <span style="font-size:10px;color:#a7a7a7;">▼</span>
+      <div class="sp-dropdown" id="spDropdown">
+        <div class="sp-drop-item" onclick="showSpSec('profile')">👤 Perfil</div>
+        <div class="sp-drop-item" onclick="showSpSec('playlists')">🎵 Tus playlists</div>
+        <div class="sp-drop-item" onclick="showSpSec('top')">🔥 Tus favoritos</div>
+        <div class="sp-drop-sep"></div>
+        <div class="sp-drop-logout" onclick="spLogout()">🚪 Cerrar sesión</div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="yt-body">
-  <div class="yt-sidebar">
-    <div class="yt-sb active" id="sb-home" onclick="showSec('home');setSb('home')"><span>🏠</span><span>Inicio</span></div>
-    <div class="yt-sb" id="sb-subs" onclick="showSec('subs');setSb('subs')"><span>📺</span><span>Suscrip.</span></div>
-    <div class="yt-sb" id="sb-history" onclick="showSec('history');setSb('history')"><span>🕐</span><span>Historial</span></div>
-    <div class="yt-sb" id="sb-liked" onclick="showSec('liked');setSb('liked')"><span>👍</span><span>Me gusta</span></div>
-    <div class="yt-sb" id="sb-tend" onclick="ytQuick('tendencias mexico 2025',null);setSb('tend')"><span>🔥</span><span>Tendenc.</span></div>
+<!-- BODY -->
+<div class="sp-body">
+
+  <!-- SIDEBAR -->
+  <div class="sp-sidebar">
+    <div class="sp-nav-item active" id="snav-home" onclick="showSpSec('home');setSnav('home')"><span>🏠</span><span>Inicio</span></div>
+    <div class="sp-nav-item" id="snav-search" onclick="showSpSec('search');setSnav('search')"><span>🔍</span><span>Buscar</span></div>
+    <div class="sp-nav-item" id="snav-profile" onclick="showSpSec('profile');setSnav('profile')"><span>👤</span><span>Perfil</span></div>
+    <div class="sp-nav-item" id="snav-playlists" onclick="showSpSec('playlists');setSnav('playlists')"><span>🎵</span><span>Playlists</span></div>
+    <div class="sp-nav-item" id="snav-top" onclick="showSpSec('top');setSnav('top')"><span>🔥</span><span>Top canciones</span></div>
+    <div style="height:1px;background:#282828;margin:8px 12px;"></div>
+    <div class="sp-lib-header"><span class="sp-lib-title">Tu biblioteca</span></div>
+    <div id="spSideLibrary"></div>
   </div>
 
-  <div class="yt-main">
-    <div class="yt-tabs">
-      <button class="yt-tab active" onclick="ytQuick('tendencias 2025',this)">🔥 Tendencias</button>
-      <button class="yt-tab" onclick="ytQuick('musica pop latino',this)">🎵 Música</button>
-      <button class="yt-tab" onclick="ytQuick('videojuegos gameplay',this)">🎮 Gaming</button>
-      <button class="yt-tab" onclick="ytQuick('noticias mexico hoy',this)">📰 Noticias</button>
-      <button class="yt-tab" onclick="ytQuick('trailer 2025',this)">🎬 Cine</button>
-      <button class="yt-tab" onclick="ytQuick('futbol goles highlights',this)">⚽ Deportes</button>
-      <button class="yt-tab" onclick="ytQuick('tutorial programacion',this)">💻 Tech</button>
-    </div>
-
-    <div class="yt-content">
+  <!-- MAIN -->
+  <div class="sp-main">
+    <div class="sp-content">
 
       <!-- HOME -->
-      <div class="sec active" id="sec-home">
-        <div id="ytPlayerArea" style="display:none;">
-          <button class="yt-backbtn" onclick="cerrarPlayer()">← Volver</button>
-          <div class="yt-player-wrap"><iframe id="ytIframe" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"></iframe></div>
-          <div class="yt-vtitle" id="ytVTitle"></div>
-          <div class="yt-vmeta">
-            <div class="yt-vviews" id="ytVViews"></div>
-            <div class="yt-vactions">
-              <button class="yt-vbtn">👍 Me gusta</button>
-              <button class="yt-vbtn">👎</button>
-              <button class="yt-vbtn">↗ Compartir</button>
-              <button class="yt-vbtn">⬇ Guardar</button>
+      <div class="sp-sec active" id="spsec-home">
+        <div class="sp-login-screen" id="spHomeLogin">
+          <svg viewBox="0 0 24 24" fill="#1db954" width="64" height="64"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+          <h2>Millones de canciones.<br>Gratis en Spotify.</h2>
+          <p>Inicia sesión con tu cuenta de Spotify para ver tu perfil, playlists y canciones favoritas.</p>
+          <button class="sp-login-big" onclick="spLogin()">Iniciar sesión con Spotify</button>
+        </div>
+        <div id="spHomeContent" style="display:none;">
+          <div class="sp-sec-title" id="spGreeting">Buenas tardes</div>
+          <div class="sp-album-grid" id="spRecentGrid"></div>
+          <div class="sp-sec-title">Tus artistas favoritos</div>
+          <div class="sp-album-grid" id="spTopArtistsGrid"></div>
+        </div>
+      </div>
+
+      <!-- BUSCAR -->
+      <div class="sp-sec" id="spsec-search">
+        <div class="sp-sec-title">Buscar</div>
+        <div class="sp-search-chips">
+          <span class="sp-schip active" onclick="spQuick('bad bunny',this)">🐰 Bad Bunny</span>
+          <span class="sp-schip" onclick="spQuick('peso pluma',this)">🎵 Peso Pluma</span>
+          <span class="sp-schip" onclick="spQuick('karol g',this)">💚 Karol G</span>
+          <span class="sp-schip" onclick="spQuick('feid',this)">🌙 Feid</span>
+          <span class="sp-schip" onclick="spQuick('taylor swift',this)">⭐ Taylor Swift</span>
+          <span class="sp-schip" onclick="spQuick('drake',this)">👑 Drake</span>
+        </div>
+        <div class="sp-status-bar" id="spSearchStatus" style="font-size:12px;color:#a7a7a7;margin-bottom:12px;"></div>
+        <div class="sp-qresults" id="spSearchResults">
+          <div style="text-align:center;padding:40px;color:#a7a7a7;">Busca una canción o artista</div>
+        </div>
+      </div>
+
+      <!-- PERFIL -->
+      <div class="sp-sec" id="spsec-profile">
+        <div class="sp-login-screen" id="spProfileLogin">
+          <h2>Inicia sesión</h2>
+          <p>Necesitas iniciar sesión para ver tu perfil.</p>
+          <button class="sp-login-big" onclick="spLogin()">Iniciar sesión con Spotify</button>
+        </div>
+        <div id="spProfileContent" style="display:none;">
+          <div class="sp-profile-banner">
+            <div class="sp-profile-photo"><img id="spProfImg" src="" alt=""/></div>
+            <div>
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,.7);">Perfil</div>
+              <div class="sp-profile-name" id="spProfName"></div>
+              <div class="sp-profile-email" id="spProfEmail"></div>
+              <div class="sp-profile-stats">
+                <div class="sp-pstat"><div class="sp-pstat-n" id="spProfFollowers">—</div><div class="sp-pstat-l">Seguidores</div></div>
+                <div class="sp-pstat"><div class="sp-pstat-n" id="spProfFollowing">—</div><div class="sp-pstat-l">Siguiendo</div></div>
+                <div class="sp-pstat"><div class="sp-pstat-n" id="spProfPlaylists">—</div><div class="sp-pstat-l">Playlists</div></div>
+              </div>
+              <div class="sp-profile-badge" id="spProfProduct"></div>
             </div>
           </div>
-          <div class="yt-chrow">
-            <div class="yt-chav" id="ytChAv">YT</div>
-            <div><div class="yt-chname" id="ytChName"></div><div class="yt-chsubs" id="ytChSubs"></div></div>
-            <button class="yt-subchbtn">Suscribirse</button>
-          </div>
-        </div>
-        <div id="ytSearchArea">
-          <div class="yt-status" id="ytStatus"></div>
-          <div class="yt-grid" id="ytGrid">
-            <div class="yt-empty" style="grid-column:1/-1"><span style="font-size:46px;">▶</span><p>Selecciona una categoría o busca un video</p></div>
-          </div>
+          <div class="sp-sec-title">Tus playlists</div>
+          <div class="sp-album-grid" id="spProfPlaylistGrid"></div>
         </div>
       </div>
 
-      <!-- CUENTA -->
-      <div class="sec" id="sec-account">
-        <div id="accountContent">
-          <div class="yt-login-screen">
-            <span style="font-size:48px;">▶</span>
-            <h2>Tu canal de YouTube</h2>
-            <p>Inicia sesión para ver tu perfil, historial y suscripciones.</p>
-            <button class="yt-gbtn" onclick="iniciarSesion()">
-              <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-              Continuar con Google
-            </button>
-          </div>
+      <!-- PLAYLISTS -->
+      <div class="sp-sec" id="spsec-playlists">
+        <div class="sp-login-screen" id="spPlaylistsLogin">
+          <h2>Tus playlists</h2>
+          <p>Inicia sesión para ver tus playlists.</p>
+          <button class="sp-login-big" onclick="spLogin()">Iniciar sesión</button>
+        </div>
+        <div id="spPlaylistsContent" style="display:none;">
+          <div class="sp-sec-title">Tus playlists</div>
+          <div class="sp-album-grid" id="spPlaylistGrid"></div>
         </div>
       </div>
 
-      <!-- SUSCRIPCIONES -->
-      <div class="sec" id="sec-subs">
-        <div id="subsContent">
-          <div class="yt-login-screen">
-            <span style="font-size:48px;">📺</span>
-            <h2>Tus suscripciones</h2>
-            <p>Inicia sesión para ver los canales a los que estás suscrita.</p>
-            <button class="yt-gbtn" onclick="iniciarSesion()">
-              <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-              Iniciar sesión
-            </button>
-          </div>
+      <!-- TOP CANCIONES -->
+      <div class="sp-sec" id="spsec-top">
+        <div class="sp-login-screen" id="spTopLogin">
+          <h2>Tus favoritos</h2>
+          <p>Inicia sesión para ver tus canciones más escuchadas.</p>
+          <button class="sp-login-big" onclick="spLogin()">Iniciar sesión</button>
         </div>
-      </div>
-
-      <!-- HISTORIAL -->
-      <div class="sec" id="sec-history">
-        <div id="historyContent">
-          <div class="yt-login-screen">
-            <span style="font-size:48px;">🕐</span>
-            <h2>Historial de reproducción</h2>
-            <p>Inicia sesión para ver los videos que has visto recientemente.</p>
-            <button class="yt-gbtn" onclick="iniciarSesion()">
-              <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-              Iniciar sesión
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ME GUSTA -->
-      <div class="sec" id="sec-liked">
-        <div id="likedContent">
-          <div class="yt-login-screen">
-            <span style="font-size:48px;">👍</span>
-            <h2>Videos que te gustaron</h2>
-            <p>Inicia sesión para ver tu lista de videos favoritos.</p>
-            <button class="yt-gbtn" onclick="iniciarSesion()">
-              <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-              Iniciar sesión
-            </button>
-          </div>
+        <div id="spTopContent" style="display:none;">
+          <div class="sp-sec-title">🔥 Tus canciones más escuchadas</div>
+          <div class="sp-track-list" id="spTopList"></div>
         </div>
       </div>
 
     </div>
+  </div>
+</div>
+
+<!-- NOW PLAYING BAR -->
+<div class="sp-nowbar" id="spNowBar">
+  <div class="sp-now-left">
+    <div class="sp-now-img"><img id="spNowImg" src="" alt=""/></div>
+    <div class="sp-now-info">
+      <div class="sp-now-title" id="spNowTitle">—</div>
+      <div class="sp-now-artist" id="spNowArtist">Selecciona una canción</div>
+    </div>
+    <span class="sp-now-heart" id="spNowHeart" onclick="toggleHeart()">♡</span>
+  </div>
+  <div class="sp-now-center">
+    <div class="sp-now-controls">
+      <button class="sp-ctrl-btn" title="Aleatorio">⇄</button>
+      <button class="sp-ctrl-btn" onclick="spPrev()">⏮</button>
+      <button class="sp-play-pause" id="spPlayPause" onclick="togglePlay()">▶</button>
+      <button class="sp-ctrl-btn" onclick="spNext()">⏭</button>
+      <button class="sp-ctrl-btn" title="Repetir">↺</button>
+    </div>
+    <div class="sp-progress">
+      <span class="sp-time" id="spCurrentTime">0:00</span>
+      <div class="sp-bar-wrap" onclick="spSeek(event)"><div class="sp-bar-fill" id="spProgressBar" style="width:0%"></div></div>
+      <span class="sp-time" id="spTotalTime">0:00</span>
+    </div>
+    <!-- Embed oculto para reproducción real -->
+    <div style="height:0;overflow:hidden;">
+      <iframe id="spEmbedFrame" src="" width="300" height="80" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+    </div>
+  </div>
+  <div class="sp-now-right">
+    <span class="sp-vol-icon">🔊</span>
+    <div class="sp-vol-bar"><div class="sp-vol-fill" id="spVolFill"></div></div>
   </div>
 </div>
 
 <script>
-var YT_KEY = 'AIzaSyC64vC6sV1HUSLKOmeIW9jYEWZ6uOhSsY4';
-var CLIENT_ID = '265879333396-mtdmt8fhl9jm1pdqsbu1t6nv6j6ntugv.apps.googleusercontent.com';
-var SCOPES = 'https://www.googleapis.com/auth/youtube.readonly';
-var ytRes = [], ytTimer = null;
-var currentUser = null, accessToken = null;
+var SP_CLIENT_ID = '75a834b79660439da7cc5a0bc38020c1';
+var SP_REDIRECT = window.location.href.split('#')[0].split('?')[0];
+var SP_SCOPES = 'user-read-private user-read-email user-top-read playlist-read-private user-follow-read';
 
-// ===== GOOGLE IDENTITY =====
-function iniciarSesion() {
-  var client = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: function(response) {
-      if(response.access_token) {
-        accessToken = response.access_token;
-        cargarPerfil();
-      }
-    }
-  });
-  client.requestAccessToken();
+var spAccessToken = null;
+var spCurrentTrack = null;
+var spQueue = [];
+var spQueueIdx = 0;
+var spPlaying = false;
+var spProgress = 0;
+var spDuration = 30;
+var spTimer = null;
+
+/* ══ AUTH ══ */
+function spLogin(){
+  var state = Math.random().toString(36).substr(2,9);
+  var url = 'https://accounts.spotify.com/authorize' +
+    '?client_id=' + SP_CLIENT_ID +
+    '&response_type=token' +
+    '&redirect_uri=' + encodeURIComponent(SP_REDIRECT) +
+    '&scope=' + encodeURIComponent(SP_SCOPES) +
+    '&state=' + state;
+  window.location.href = url;
 }
 
-async function cargarPerfil() {
-  try {
-    var res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: 'Bearer ' + accessToken }
-    });
-    var user = await res.json();
-    // Fallback para campos que pueden venir undefined
-    user.name = user.name || user.given_name || user.email || 'Usuario';
-    user.picture = user.picture || '';
-    user.email = user.email || '';
-    currentUser = user;
-    actualizarUI(user);
-    cargarSuscripciones();
-    cargarVideosGustados();
-  } catch(e) { console.error(e); }
-}
-
-function actualizarUI(user) {
-  document.getElementById('ytLoginBtn').style.display = 'none';
-  var av = document.getElementById('ytAvatarBtn');
-  av.style.display = 'flex';
-  document.getElementById('ytAvatarImg').src = user.picture;
-
-  document.getElementById('ytDropImg').src = user.picture;
-  document.getElementById('ytDropName').textContent = user.name;
-  document.getElementById('ytDropEmail').textContent = user.email;
-
-  // Sección cuenta
-  document.getElementById('accountContent').innerHTML =
-    '<div class="yt-acc-banner">' +
-      '<div class="yt-acc-photo"><img src="'+user.picture+'" alt=""/></div>' +
-      '<div>' +
-        '<div class="yt-acc-name">'+user.name+'</div>' +
-        '<div class="yt-acc-email">'+user.email+'</div>' +
-        '<div style="margin-top:10px;display:flex;gap:10px;">' +
-          '<button class="yt-vbtn" onclick="showSec(\'subs\')">📺 Suscripciones</button>' +
-          '<button class="yt-vbtn" onclick="showSec(\'history\')">🕐 Historial</button>' +
-          '<button class="yt-vbtn" onclick="showSec(\'liked\')">👍 Me gusta</button>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-}
-
-function toggleDropdown() {
-  document.getElementById('ytDropdown').classList.toggle('open');
-}
-document.addEventListener('click', function(e) {
-  if(!e.target.closest('.yt-user-menu')) {
-    document.getElementById('ytDropdown').classList.remove('open');
+function spCheckToken(){
+  // 1. Token nuevo en el hash (viene del redirect de Spotify)
+  var hash = window.location.hash.substring(1);
+  var params = {};
+  hash.split('&').forEach(function(p){ var kv=p.split('='); if(kv[0]) params[kv[0]]=decodeURIComponent(kv[1]||''); });
+  if(params.access_token){
+    spAccessToken = params.access_token;
+    var expires = Date.now() + (parseInt(params.expires_in || 3600) * 1000);
+    localStorage.setItem('sp_token', spAccessToken);
+    localStorage.setItem('sp_expires', String(expires));
+    window.history.replaceState(null, '', window.location.pathname);
+    spOnLogin();
+    return;
   }
-});
-
-function cerrarSesion() {
-  accessToken = null; currentUser = null;
-  document.getElementById('ytLoginBtn').style.display = 'flex';
-  document.getElementById('ytAvatarBtn').style.display = 'none';
-  document.getElementById('ytDropdown').classList.remove('open');
-  document.getElementById('accountContent').innerHTML = '<div class="yt-login-screen"><span style="font-size:48px;">▶</span><h2>Tu canal de YouTube</h2><p>Inicia sesión para ver tu perfil.</p><button class="yt-gbtn" onclick="iniciarSesion()"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continuar con Google</button></div>';
+  // 2. Token guardado (sesion previa, dura 1 hora)
+  var saved = localStorage.getItem('sp_token');
+  var exp = parseInt(localStorage.getItem('sp_expires') || '0');
+  if(saved && exp > Date.now()){
+    spAccessToken = saved;
+    spOnLogin();
+    return;
+  }
+  // 3. Expirado — limpiar
+  localStorage.removeItem('sp_token');
+  localStorage.removeItem('sp_expires');
 }
 
-// ===== SUSCRIPCIONES =====
-async function cargarSuscripciones() {
-  if(!accessToken) return;
+async function spOnLogin(){
   try {
-    var res = await fetch('https://www.googleapis.com/youtube/v3/subscriptions?part=snippet&mine=true&maxResults=20', {
-      headers: { Authorization: 'Bearer ' + accessToken }
-    });
+    var res = await fetch('https://api.spotify.com/v1/me', { headers: { Authorization: 'Bearer '+spAccessToken } });
+    var u = await res.json();
+    // UI Header
+    document.getElementById('spLoginBtn').style.display = 'none';
+    var wrap = document.getElementById('spAvatarWrap');
+    wrap.style.display = 'flex';
+    if(u.images && u.images.length){
+      document.getElementById('spAvatarImg').src = u.images[0].url;
+    } else {
+      document.getElementById('spAvatarInitial').textContent = (u.display_name||'U').charAt(0).toUpperCase();
+    }
+    document.getElementById('spUserName').textContent = u.display_name || u.id;
+
+    // Perfil
+    document.getElementById('spProfileLogin').style.display = 'none';
+    document.getElementById('spProfileContent').style.display = 'block';
+    if(u.images && u.images.length) document.getElementById('spProfImg').src = u.images[0].url;
+    document.getElementById('spProfName').textContent = u.display_name || u.id;
+    document.getElementById('spProfEmail').textContent = u.email || '';
+    document.getElementById('spProfFollowers').textContent = u.followers ? u.followers.total : '—';
+    document.getElementById('spProfProduct').textContent = u.product === 'premium' ? '✓ Premium' : 'Free';
+
+    // Home
+    document.getElementById('spHomeLogin').style.display = 'none';
+    document.getElementById('spHomeContent').style.display = 'block';
+    var h = new Date().getHours();
+    document.getElementById('spGreeting').textContent = h<12?'Buenos días 👋':h<18?'Buenas tardes 👋':'Buenas noches 👋';
+
+    // Cargar datos
+    spLoadPlaylists();
+    spLoadTopTracks();
+    spLoadTopArtists();
+
+  } catch(e){ console.error(e); }
+}
+
+async function spLoadPlaylists(){
+  if(!spAccessToken) return;
+  try {
+    var res = await fetch('https://api.spotify.com/v1/me/playlists?limit=20', { headers: { Authorization: 'Bearer '+spAccessToken } });
     var data = await res.json();
     var items = data.items || [];
-    if(!items.length) {
-      document.getElementById('subsContent').innerHTML = '<div class="yt-empty"><span style="font-size:40px;">📺</span><p>No tienes suscripciones aún</p></div>';
-      return;
-    }
-    var html = '<div class="yt-sec-title">📺 Tus suscripciones ('+items.length+')</div><div class="yt-sub-list">';
-    items.forEach(function(item) {
-      var ch = item.snippet;
-      var thumb = ch.thumbnails && ch.thumbnails.default ? ch.thumbnails.default.url : '';
-      html += '<div class="yt-sub-row" onclick="ytQuick(\''+ch.title.replace(/'/g,'')+'\',null)">' +
-        '<div class="yt-sub-photo"><img src="'+thumb+'" onerror="this.style.display=\'none\'"/></div>' +
-        '<div><div class="yt-sub-name-text">'+ch.title+'</div><div class="yt-sub-subs">'+ch.description.substring(0,60)+'</div></div>' +
-        '</div>';
+    document.getElementById('spProfPlaylists').textContent = data.total || items.length;
+
+    // Playlists section
+    document.getElementById('spPlaylistsLogin').style.display = 'none';
+    document.getElementById('spPlaylistsContent').style.display = 'block';
+
+    var html = '';
+    items.forEach(function(pl){
+      var img = pl.images && pl.images.length ? pl.images[0].url : '';
+      html += '<div class="sp-album-card" onclick="spOpenPlaylist(\''+pl.id+'\',\''+pl.name.replace(/'/g,'').replace(/"/g,'').substring(0,30)+'\')">' +
+        '<div class="sp-album-img">'+(img?'<img src="'+img+'" loading="lazy"/>':'<div style="width:100%;height:100%;background:#333;display:flex;align-items:center;justify-content:center;font-size:32px;">🎵</div>')+'</div>' +
+        '<div class="sp-album-name">'+pl.name+'</div>' +
+        '<div class="sp-album-artist">'+pl.tracks.total+' canciones</div>' +
+      '</div>';
     });
-    html += '</div>';
-    document.getElementById('subsContent').innerHTML = html;
-  } catch(e) {
-    document.getElementById('subsContent').innerHTML = '<div class="yt-empty"><p style="color:#f87171;">Error al cargar suscripciones</p></div>';
-  }
+    document.getElementById('spPlaylistGrid').innerHTML = html || '<p style="color:#a7a7a7;">No tienes playlists aún</p>';
+    document.getElementById('spProfPlaylistGrid').innerHTML = html;
+
+    // Sidebar library
+    var sideHtml = '';
+    items.slice(0,8).forEach(function(pl){
+      var img = pl.images && pl.images.length ? pl.images[0].url : '';
+      sideHtml += '<div class="sp-playlist-item" onclick="spOpenPlaylist(\''+pl.id+'\',\''+pl.name.replace(/'/g,'').replace(/"/g,'').substring(0,30)+'\')">' +
+        '<div class="sp-playlist-img">'+(img?'<img src="'+img+'" loading="lazy"/>':'')+'</div>' +
+        '<div><div class="sp-playlist-name">'+pl.name+'</div><div class="sp-playlist-type">Playlist</div></div>' +
+      '</div>';
+    });
+    document.getElementById('spSideLibrary').innerHTML = sideHtml;
+
+    // Recent (primeras 6 playlists en home)
+    var recentHtml = '';
+    items.slice(0,6).forEach(function(pl){
+      var img = pl.images && pl.images.length ? pl.images[0].url : '';
+      recentHtml += '<div class="sp-album-card" onclick="spOpenPlaylist(\''+pl.id+'\',\''+pl.name.replace(/'/g,'').replace(/"/g,'').substring(0,30)+'\')">' +
+        '<div class="sp-album-img">'+(img?'<img src="'+img+'" loading="lazy"/>':'<div style="width:100%;height:100%;background:#333;display:flex;align-items:center;justify-content:center;font-size:32px;">🎵</div>')+'</div>' +
+        '<div class="sp-album-name">'+pl.name+'</div>' +
+        '<div class="sp-album-artist">Playlist</div>' +
+      '</div>';
+    });
+    document.getElementById('spRecentGrid').innerHTML = recentHtml;
+
+  } catch(e){ console.error(e); }
 }
 
-// ===== VIDEOS GUSTADOS =====
-async function cargarVideosGustados() {
-  if(!accessToken) return;
+async function spLoadTopTracks(){
+  if(!spAccessToken) return;
   try {
-    var res = await fetch('https://www.googleapis.com/youtube/v3/videos?part=snippet&myRating=like&maxResults=12', {
-      headers: { Authorization: 'Bearer ' + accessToken }
-    });
+    var res = await fetch('https://api.spotify.com/v1/me/top/tracks?limit=20&time_range=medium_term', { headers: { Authorization: 'Bearer '+spAccessToken } });
     var data = await res.json();
     var items = data.items || [];
-    if(!items.length) {
-      document.getElementById('likedContent').innerHTML = '<div class="yt-empty"><span style="font-size:40px;">👍</span><p>No hay videos que te hayan gustado aún</p></div>';
-      return;
-    }
-    var html = '<div class="yt-sec-title">👍 Videos que te gustaron ('+items.length+')</div><div class="yt-grid">';
-    items.forEach(function(v, i) {
-      var s = v.snippet;
-      var thumb = s.thumbnails.medium ? s.thumbnails.medium.url : s.thumbnails.default.url;
-      html += mkCard(v.id, s.title, s.channelTitle, thumb, i);
+    spQueue = items;
+
+    document.getElementById('spTopLogin').style.display = 'none';
+    document.getElementById('spTopContent').style.display = 'block';
+
+    var html = '';
+    items.forEach(function(t, i){
+      var img = t.album.images.length ? t.album.images[t.album.images.length-1].url : '';
+      var artists = t.artists.map(function(a){ return a.name; }).join(', ');
+      var dur = Math.floor(t.duration_ms/60000)+':'+String(Math.floor((t.duration_ms%60000)/1000)).padStart(2,'0');
+      html += '<div class="sp-track" id="sptrack-'+i+'" onclick="spPlayTrack('+i+')">' +
+        '<div class="sp-track-num">'+(i+1)+'</div>' +
+        '<button class="sp-play-btn">▶</button>' +
+        '<div class="sp-track-img">'+(img?'<img src="'+img+'" loading="lazy"/>':'')+'</div>' +
+        '<div class="sp-track-info"><div class="sp-track-name">'+t.name+'</div><div class="sp-track-artist">'+artists+'</div></div>' +
+        '<div class="sp-track-duration">'+dur+'</div>' +
+      '</div>';
     });
-    html += '</div>';
-    document.getElementById('likedContent').innerHTML = html;
-    bindCards(document.getElementById('likedContent'), items, true);
-  } catch(e) {}
+    document.getElementById('spTopList').innerHTML = html || '<p style="color:#a7a7a7;padding:20px;">No hay datos aún</p>';
+  } catch(e){ console.error(e); }
 }
 
-// ===== BUSQUEDA =====
-document.getElementById('ytQ').addEventListener('input', function() {
-  clearTimeout(ytTimer);
-  if(this.value.trim().length > 2) ytTimer = setTimeout(ytBuscar, 650);
-});
+async function spLoadTopArtists(){
+  if(!spAccessToken) return;
+  try {
+    var res = await fetch('https://api.spotify.com/v1/me/top/artists?limit=6&time_range=medium_term', { headers: { Authorization: 'Bearer '+spAccessToken } });
+    var data = await res.json();
+    var items = data.items || [];
+    var html = '';
+    items.forEach(function(a){
+      var img = a.images && a.images.length ? a.images[a.images.length-1].url : '';
+      html += '<div class="sp-album-card" onclick="spQuick(\''+a.name.replace(/'/g,'').replace(/"/g,'')+'\',null);showSpSec(\'search\')">' +
+        '<div class="sp-album-img" style="border-radius:50%;">'+(img?'<img src="'+img+'" loading="lazy"/>':'<div style="width:100%;height:100%;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;">🎤</div>')+'</div>' +
+        '<div class="sp-album-name">'+a.name+'</div>' +
+        '<div class="sp-album-artist">Artista</div>' +
+      '</div>';
+    });
+    document.getElementById('spTopArtistsGrid').innerHTML = html;
+  } catch(e){}
+}
 
-function ytQuick(q, btn) {
-  document.getElementById('ytQ').value = q;
-  document.querySelectorAll('.yt-tab').forEach(function(t){t.classList.remove('active');});
+async function spOpenPlaylist(id, name){
+  showSpSec('playlists');
+  try {
+    var res = await fetch('https://api.spotify.com/v1/playlists/'+id+'/tracks?limit=20', { headers: { Authorization: 'Bearer '+spAccessToken } });
+    var data = await res.json();
+    var tracks = (data.items || []).filter(function(i){ return i.track; }).map(function(i){ return i.track; });
+    spQueue = tracks;
+    var html = '<button onclick="showSpSec(\'playlists\')" style="background:#282828;border:none;color:#fff;padding:6px 14px;border-radius:500px;font-size:12px;cursor:pointer;margin-bottom:16px;">← Volver</button>';
+    html += '<div class="sp-sec-title">'+name+'</div><div class="sp-track-list">';
+    tracks.forEach(function(t, i){
+      if(!t) return;
+      var img = t.album && t.album.images.length ? t.album.images[t.album.images.length-1].url : '';
+      var artists = t.artists ? t.artists.map(function(a){ return a.name; }).join(', ') : '';
+      var dur = t.duration_ms ? Math.floor(t.duration_ms/60000)+':'+String(Math.floor((t.duration_ms%60000)/1000)).padStart(2,'0') : '';
+      html += '<div class="sp-track" id="sptrack-'+i+'" onclick="spPlayTrack('+i+')">' +
+        '<div class="sp-track-num">'+(i+1)+'</div>' +
+        '<button class="sp-play-btn">▶</button>' +
+        '<div class="sp-track-img">'+(img?'<img src="'+img+'" loading="lazy"/>':'')+'</div>' +
+        '<div class="sp-track-info"><div class="sp-track-name">'+t.name+'</div><div class="sp-track-artist">'+artists+'</div></div>' +
+        '<div class="sp-track-duration">'+dur+'</div>' +
+      '</div>';
+    });
+    html += '</div>';
+    document.getElementById('spPlaylistsContent').innerHTML = html;
+  } catch(e){ console.error(e); }
+}
+
+/* ══ BÚSQUEDA ══ */
+var spToken = null;
+async function spGetClientToken(){
+  if(spToken) return spToken;
+  try {
+    var res = await fetch('https://accounts.spotify.com/api/token', {
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'grant_type=client_credentials&client_id=75a834b79660439da7cc5a0bc38020c1&client_secret=80167b53e5334ac3a90fbb0833eaf360'
+    });
+    var d = await res.json();
+    spToken = d.access_token;
+    setTimeout(function(){ spToken=null; }, 3500000);
+    return spToken;
+  } catch(e){ return null; }
+}
+
+function spQuick(q, btn){
+  document.getElementById('spQ').value = q;
+  document.querySelectorAll('.sp-schip').forEach(function(c){ c.classList.remove('active'); });
   if(btn) btn.classList.add('active');
-  showSec('home');
-  ytBuscar();
+  showSpSec('search'); setSnav('search');
+  spSearch();
 }
 
-async function ytBuscar() {
-  var q = document.getElementById('ytQ').value.trim();
+async function spSearch(){
+  var q = document.getElementById('spQ').value.trim();
   if(!q) return;
-  cerrarPlayer();
-  var st = document.getElementById('ytStatus'), grid = document.getElementById('ytGrid');
-  st.className = 'yt-status loading'; st.textContent = 'Buscando "'+q+'"…';
-  var sk = '';
-  for(var i=0;i<8;i++) sk += '<div><div class="sk" style="width:100%;padding-bottom:56.25%;border-radius:9px;margin-bottom:7px;"></div><div style="display:flex;gap:7px;"><div class="sk" style="width:30px;height:30px;border-radius:50%;flex-shrink:0;"></div><div style="flex:1;"><div class="sk" style="height:11px;margin-bottom:4px;"></div><div class="sk" style="height:10px;width:55%;"></div></div></div></div>';
-  grid.innerHTML = sk;
+  showSpSec('search'); setSnav('search');
+  document.getElementById('spSearchStatus').textContent = 'Buscando "'+q+'"…';
+  document.getElementById('spSearchResults').innerHTML = '<div style="text-align:center;padding:20px;color:#a7a7a7;">⏳ Cargando...</div>';
+
+  var token = spAccessToken || await spGetClientToken();
+  if(!token){ document.getElementById('spSearchStatus').textContent = '✗ Error de autenticación'; return; }
+
   try {
-    var res = await fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=12&q='+encodeURIComponent(q)+'&key='+YT_KEY);
+    var res = await fetch('https://api.spotify.com/v1/search?q='+encodeURIComponent(q)+'&type=track&limit=10&market=MX', {
+      headers: { Authorization: 'Bearer '+token }
+    });
     var data = await res.json();
-    if(data.error) throw new Error(data.error.message);
-    ytRes = data.items || [];
-    if(!ytRes.length) throw new Error('Sin resultados');
-    st.className = 'yt-status ok'; st.textContent = '✓ '+ytRes.length+' videos para "'+q+'"';
-    renderGrid(ytRes);
-  } catch(e) {
-    st.className = 'yt-status err'; st.textContent = '✗ ' + e.message;
-    grid.innerHTML = '<div class="yt-empty" style="grid-column:1/-1"><span style="font-size:40px;">⚠</span><p style="color:#f87171;">'+e.message+'</p></div>';
+    var tracks = (data.tracks && data.tracks.items) || [];
+    if(!tracks.length){ document.getElementById('spSearchStatus').textContent = '0 resultados'; document.getElementById('spSearchResults').innerHTML='<div style="text-align:center;padding:40px;color:#a7a7a7;">Sin resultados</div>'; return; }
+
+    spQueue = tracks;
+    document.getElementById('spSearchStatus').textContent = '✓ '+tracks.length+' canciones';
+    var html = '';
+    tracks.forEach(function(t, i){
+      var img = t.album.images.length ? t.album.images[t.album.images.length-1].url : '';
+      var artists = t.artists.map(function(a){ return a.name; }).join(', ');
+      html += '<div class="sp-qitem" onclick="spPlayTrack('+i+')">' +
+        (img?'<img src="'+img+'" loading="lazy"/>':'<div style="width:44px;height:44px;background:#333;border-radius:4px;flex-shrink:0;"></div>') +
+        '<div class="sp-qitem-info"><div class="sp-qitem-name">'+t.name+'</div><div class="sp-qitem-sub">'+artists+' · '+t.album.name+'</div></div>' +
+        '<button class="sp-qitem-play">▶</button>' +
+      '</div>';
+    });
+    document.getElementById('spSearchResults').innerHTML = html;
+
+    // Auto-play primero
+    spPlayTrack(0);
+  } catch(e){
+    document.getElementById('spSearchStatus').textContent = '✗ '+e.message;
   }
 }
 
-function fmtN(n){ if(!n)return''; if(n>=1000000)return(n/1000000).toFixed(1)+'M'; if(n>=1000)return(n/1000).toFixed(0)+'K'; return n; }
-function rDur(){ var m=Math.floor(Math.random()*8)+1,s=String(Math.floor(Math.random()*60)).padStart(2,'0'); return m+':'+s; }
+/* ══ REPRODUCTOR ══ */
+function spPlayTrack(idx){
+  var t = spQueue[idx];
+  if(!t) return;
+  spQueueIdx = idx;
+  spCurrentTrack = t;
 
-function mkCard(id, title, ch, thumb, i) {
-  var dur = rDur();
-  var views = fmtN(Math.floor(10000+Math.random()*9000000));
-  var ago = Math.floor(1+Math.random()*30)+' días';
-  var init = ch.charAt(0).toUpperCase();
-  return '<div class="ytc" data-index="'+i+'" data-id="'+id+'" data-title="'+title.replace(/"/g,'&quot;')+'" data-ch="'+ch.replace(/"/g,'&quot;')+'">' +
-    '<div class="ytc-thumb"><img src="'+thumb+'" loading="lazy" onerror="this.src=\'https://img.youtube.com/vi/'+id+'/mqdefault.jpg\'"/><div class="ytc-overlay"><div class="ytc-play">▶</div></div><div class="ytc-dur">'+dur+'</div></div>' +
-    '<div class="ytc-info"><div class="ytc-av">'+init+'</div><div class="ytc-meta"><div class="ytc-title">'+title+'</div><div class="ytc-ch">'+ch+'</div><div class="ytc-views">'+views+' vistas · hace '+ago+'</div></div></div>' +
-  '</div>';
+  // Highlight
+  document.querySelectorAll('.sp-track,.sp-qitem').forEach(function(el){ el.classList.remove('playing'); });
+  var el = document.getElementById('sptrack-'+idx);
+  if(el) el.classList.add('playing');
+
+  var img = (t.album && t.album.images && t.album.images.length) ? t.album.images[0].url : '';
+  var artists = t.artists ? t.artists.map(function(a){ return a.name; }).join(', ') : '';
+
+  // Now bar
+  document.getElementById('spNowImg').src = img;
+  document.getElementById('spNowTitle').textContent = t.name;
+  document.getElementById('spNowArtist').textContent = artists;
+  document.getElementById('spPlayPause').textContent = '⏸';
+  spPlaying = true;
+
+  // Embed real de Spotify (reproduce preview o canción completa si hay sesión)
+  document.getElementById('spEmbedFrame').src = 'https://open.spotify.com/embed/track/'+t.id+'?utm_source=generator&theme=0&autoplay=1';
+
+  // Duración
+  spDuration = t.duration_ms ? t.duration_ms/1000 : 30;
+  document.getElementById('spTotalTime').textContent = fmtTime(spDuration);
+  spProgress = 0;
+  clearInterval(spTimer);
+  spTimer = setInterval(function(){
+    if(!spPlaying) return;
+    spProgress = Math.min(spProgress+1, spDuration);
+    document.getElementById('spProgressBar').style.width = (spProgress/spDuration*100)+'%';
+    document.getElementById('spCurrentTime').textContent = fmtTime(spProgress);
+    if(spProgress >= spDuration){ clearInterval(spTimer); spNext(); }
+  }, 1000);
 }
 
-function renderGrid(items) {
-  var html = '';
-  items.forEach(function(v,i){ html += mkCard(v.id.videoId, v.snippet.title, v.snippet.channelTitle, v.snippet.thumbnails.medium?v.snippet.thumbnails.medium.url:v.snippet.thumbnails.default.url, i); });
-  document.getElementById('ytGrid').innerHTML = html;
-  bindCards(document.getElementById('ytGrid'), items, false);
-}
+function fmtTime(s){ return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'); }
 
-function bindCards(container, items, isLiked) {
-  container.querySelectorAll('.ytc').forEach(function(el) {
-    el.addEventListener('click', function() {
-      var idx = parseInt(this.getAttribute('data-index'));
-      var id = this.getAttribute('data-id');
-      var title = this.getAttribute('data-title');
-      var ch = this.getAttribute('data-ch');
-      ytPlay(id, title, ch);
-    });
-  });
+function togglePlay(){
+  spPlaying = !spPlaying;
+  document.getElementById('spPlayPause').textContent = spPlaying ? '⏸' : '▶';
 }
+function spNext(){ if(spQueueIdx < spQueue.length-1) spPlayTrack(spQueueIdx+1); }
+function spPrev(){ if(spQueueIdx > 0) spPlayTrack(spQueueIdx-1); }
+function toggleHeart(){ var h=document.getElementById('spNowHeart'); h.textContent = h.textContent==='♡'?'♥':'♡'; h.style.color = h.textContent==='♥'?'#1db954':'#a7a7a7'; }
+function spSeek(e){ var rect=e.currentTarget.getBoundingClientRect(); spProgress=(e.clientX-rect.left)/rect.width*spDuration; }
 
-function ytPlay(id, titulo, canal) {
-  document.getElementById('ytPlayerArea').style.display = 'block';
-  document.getElementById('ytSearchArea').style.display = 'none';
-  document.getElementById('ytIframe').src = 'https://www.youtube.com/embed/'+id+'?autoplay=1&rel=0&modestbranding=1';
-  document.getElementById('ytVTitle').textContent = titulo;
-  document.getElementById('ytVViews').textContent = fmtN(Math.floor(50000+Math.random()*50000000))+' vistas';
-  document.getElementById('ytChAv').textContent = canal.charAt(0).toUpperCase();
-  document.getElementById('ytChName').textContent = canal;
-  document.getElementById('ytChSubs').textContent = fmtN(Math.floor(1000+Math.random()*10000000))+' suscriptores';
-  showSec('home');
+/* ══ NAV ══ */
+function showSpSec(name){
+  document.querySelectorAll('.sp-sec').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById('spsec-'+name).classList.add('active');
+  document.getElementById('spDropdown').classList.remove('open');
 }
-
-function cerrarPlayer() {
-  document.getElementById('ytPlayerArea').style.display = 'none';
-  document.getElementById('ytSearchArea').style.display = 'block';
-  document.getElementById('ytIframe').src = '';
-}
-
-// ===== NAV =====
-function showSec(name) {
-  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('active');});
-  document.getElementById('sec-'+name).classList.add('active');
-  document.getElementById('ytDropdown').classList.remove('open');
-}
-function setSb(name) {
-  document.querySelectorAll('.yt-sb').forEach(function(s){s.classList.remove('active');});
-  var el = document.getElementById('sb-'+name);
+function setSnav(name){
+  document.querySelectorAll('.sp-nav-item').forEach(function(n){ n.classList.remove('active'); });
+  var el = document.getElementById('snav-'+name);
   if(el) el.classList.add('active');
 }
+function toggleSpDropdown(){ document.getElementById('spDropdown').classList.toggle('open'); }
+document.addEventListener('click', function(e){ if(!e.target.closest('.sp-avatar-wrap')) document.getElementById('spDropdown').classList.remove('open'); });
+function spLogout(){ spAccessToken=null; localStorage.removeItem('sp_token'); localStorage.removeItem('sp_expires'); window.location.reload(); }
 
-// Cargar tendencias al inicio
-ytQuick('tendencias mexico 2025', document.querySelector('.yt-tab'));
+// Init
+spCheckToken();
 </script>
 </body>
 </html>
